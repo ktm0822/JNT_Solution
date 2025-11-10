@@ -269,7 +269,7 @@ canvas{background:#f9fafb;border-radius:8px;padding:8px;}
     <button name="action" value="load">불러오기</button>
 
     <label>새 프리셋 이름</label>
-    <input name="newname" placeholder="예: 강릉 ○○학원 기본세트">
+    <input name="newname" placeholder="예: 지역명, 상호명, 중점키워드 등등">
     <button name="action" value="save">프리셋 저장</button>
 
     <label>기준 키워드 (쉼표로 구분)</label>
@@ -734,7 +734,7 @@ button{padding:6px 10px;border:none;border-radius:6px;font-size:13px;cursor:poin
       <input name="new_pw" placeholder="비밀번호">
     </div>
     <div style="margin-top:6px;">
-      <input name="new_name" placeholder="표시 이름 (예: 강북제일자동차운전전문학원)">
+      <input name="new_name" placeholder="표시 이름 (예: 상호명)">
     </div>
     <button class="btn-add" type="submit">계정 추가</button>
   </form>
