@@ -1,0 +1,18 @@
+{
+  "admin": {
+    "password": "1234",
+    "name": "관리자"
+  },
+  "kangbuk": {
+    "password": "gkacademy",
+    "name": "강북제일자동차운전전문학원"
+  },
+  "gyeongpo": {
+    "password": "gpacademy",
+    "name": "경포자동차운전전문학원"
+  },
+  "burim": {
+    "password": "burim1234",
+    "name": "부림자동차운전전문학원"
+  }
+}
