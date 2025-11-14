@@ -7,6 +7,7 @@ import json
 import pandas as pd
 from io import BytesIO
 from datetime import datetime
+import os
 
 from flask import (
     Flask,
@@ -267,9 +268,13 @@ canvas{background:#f9fafb;border-radius:8px;padding:8px;}
       {% endfor %}
     </select>
     <button name="action" value="load">불러오기</button>
+    <button name="action" value="delete_preset"
+            onclick="return confirm('선택한 프리셋을 삭제할까요?');">
+      삭제
+    </button>
 
     <label>새 프리셋 이름</label>
-    <input name="newname" placeholder="예: 지역명, 상호명, 중점키워드 등등">
+    <input name="newname" placeholder="예: 강릉 ○○학원 기본세트">
     <button name="action" value="save">프리셋 저장</button>
 
     <label>기준 키워드 (쉼표로 구분)</label>
@@ -478,6 +483,20 @@ def index():
                 presets[newname] = keywords
                 save_presets(presets)
                 msg = f"프리셋 '{newname}'이(가) 저장되었습니다."
+
+        elif action == "delete_preset":
+            target = request.form.get("preset", "").strip()
+            if not target:
+                msg = "삭제할 프리셋을 먼저 선택해 주세요."
+            elif target not in presets:
+                msg = "해당 프리셋을 찾을 수 없습니다."
+            else:
+                presets.pop(target)
+                save_presets(presets)
+                if selected == target:
+                    selected = ""
+                    keywords = ""
+                msg = f"프리셋 '{target}'이(가) 삭제되었습니다."
 
         elif action == "generate":
             base_keywords = [k.strip() for k in keywords.split(",") if k.strip()]
@@ -734,7 +753,7 @@ button{padding:6px 10px;border:none;border-radius:6px;font-size:13px;cursor:poin
       <input name="new_pw" placeholder="비밀번호">
     </div>
     <div style="margin-top:6px;">
-      <input name="new_name" placeholder="표시 이름 (예: 상호명)">
+      <input name="new_name" placeholder="표시 이름 (예: 강북제일자동차운전전문학원)">
     </div>
     <button class="btn-add" type="submit">계정 추가</button>
   </form>
@@ -813,4 +832,5 @@ def download():
 # 앱 실행
 # ==========================
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5050, debug=True)
+    port = int(os.environ.get("PORT", 5050))
+    app.run(host="0.0.0.0", port=port, debug=True)
