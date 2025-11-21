@@ -1,5 +1,5 @@
 {
-  "industry": "관상어/물생활 샵",
+  "industry": "관상어/물생활",
   "report_title": "관상어·물생활 키워드 분석 리포트",
   "good_keyword_rule": "검색량 80 이상 & 경쟁도 0.8 이하",
   "summary_format": "총 {total_keywords}개 키워드 중 {passed_keywords}개가 조건을 통과했습니다. 평균 검색량 {avg_search}회, 평균 경쟁도 {avg_comp}입니다.",
