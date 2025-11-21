@@ -262,8 +262,19 @@ MAIN_HTML = """
 <!doctype html><html lang="ko"><head><meta charset="utf-8">
 <title>J&T Solution - 키워드 리포트</title>
 <style>
-body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f4f5f7;max-width:960px;margin:40px auto;padding:0 16px;}
-.card{background:white;padding:24px;border-radius:14px;box-shadow:0 6px 18px rgba(0,0,0,0.05);}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:#f4f5f7;
+  max-width:960px;
+  margin:40px auto;
+  padding:0 16px;
+}
+.card{
+  background:white;
+  padding:24px;
+  border-radius:14px;
+  box-shadow:0 6px 18px rgba(0,0,0,0.05);
+}
 .logo{display:flex;align-items:center;gap:10px;margin-bottom:16px;}
 .logo img{height:40px;}
 .sub{font-size:12px;color:#888;}
@@ -272,17 +283,38 @@ a.logout,a.admin-link{font-size:13px;text-decoration:none;margin-left:8px;}
 a.logout{color:#e11d48;}
 a.admin-link{color:#2563eb;}
 label{display:block;margin-top:12px;font-size:13px;font-weight:600;}
-textarea,input,select,button{width:100%;padding:8px;margin-top:4px;border-radius:8px;border:1px solid #d1d5db;font-size:13px;box-sizing:border-box;}
-button{margin-top:10px;background:#111827;color:white;border:none;border-radius:8px;font-weight:600;cursor:pointer;}
+textarea,input,select,button{
+  width:100%;padding:8px;margin-top:4px;
+  border-radius:8px;border:1px solid #d1d5db;
+  font-size:13px;box-sizing:border-box;
+}
+textarea{min-height:72px;}
+button{
+  margin-top:10px;background:#111827;color:white;
+  border:none;border-radius:8px;font-weight:600;cursor:pointer;
+}
 .msg{margin-top:16px;padding:10px;background:#f3f4f6;border-radius:8px;font-size:13px;}
 .chart-section{margin-top:24px;}
 .chart-section h3{font-size:14px;margin-bottom:8px;}
 canvas{background:#f9fafb;border-radius:8px;padding:8px;}
 .summary-table{margin-top:16px;font-size:13px;border-collapse:collapse;width:100%;}
-.summary-table th,.summary-table td{border:1px solid #e5e7eb;padding:6px 8px;text-align:center;}
+.summary-table th,.summary-table td{
+  border:1px solid #e5e7eb;padding:6px 8px;text-align:center;
+}
 .summary-table th{background:#f9fafb;}
 .recommend-list{margin-top:4px;font-size:13px;padding-left:18px;}
 .recommend-list li{margin-bottom:2px;}
+.preset-box{
+  margin-top:24px;
+  padding:16px;
+  border-radius:12px;
+  background:#f7f7f9;
+  border:1px solid #e5e7eb;
+}
+.preset-box-title{font-size:15px;font-weight:600;margin-bottom:4px;}
+.preset-note{font-size:12px;color:#6b7280;margin-bottom:8px;}
+.btn-row{display:flex;gap:8px;margin-top:8px;}
+.btn-row button{flex:1;margin-top:0;}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head><body>
@@ -305,29 +337,15 @@ canvas{background:#f9fafb;border-radius:8px;padding:8px;}
     </div>
   </div>
 
+  <!-- 하나의 폼 안에서: 위는 '리포트 조건', 아래는 '프리셋 관리(선택)' -->
   <form method="post">
-    <label>프리셋 선택</label>
-    <select name="preset">
-      <option value="">-- 선택 --</option>
-      {% for n in presets %}
-        <option value="{{n}}" {% if n == selected %}selected{% endif %}>{{n}}</option>
-      {% endfor %}
-    </select>
-    <button name="action" value="load">불러오기</button>
-    <button name="action" value="delete_preset"
-            onclick="return confirm('선택한 프리셋을 삭제할까요?');">
-      삭제
-    </button>
 
-    <label>새 프리셋 이름</label>
-    <input name="newname" placeholder="예: 지역명·업종별 키워드 세트">
-    <button name="action" value="save">프리셋 저장</button>
-
+    <!-- ⭐ 1. 리포트 생성에 필요한 핵심 조건 (맨 위 배치) -->
     <label>기준 키워드 (쉼표로 구분)</label>
-    <textarea name="keywords" rows="3">{{keywords}}</textarea>
+    <textarea name="keywords" rows="3" placeholder="예: 운전면허, 1종보통, 2종자동">{{keywords}}</textarea>
 
     <label>최소 총 검색수</label>
-    <input type="number" name="min_total" value="{{min_total or ''}}">
+    <input type="number" name="min_total" value="{{min_total or ''}}" placeholder="예: 100">
 
     <label>최대 경쟁도</label>
     <input name="max_comp" value="{{max_comp or ''}}" placeholder="예: 0.8 (없으면 공백)">
@@ -339,6 +357,37 @@ canvas{background:#f9fafb;border-radius:8px;padding:8px;}
     </select>
 
     <button name="action" value="generate">리포트 생성</button>
+
+    <hr style="margin:24px 0;border:none;border-top:1px solid #e5e7eb;">
+
+    <!-- ⭐ 2. 프리셋 관리 영역 (선택 기능) -->
+    <div class="preset-box">
+      <div class="preset-box-title">프리셋 관리 (선택 기능)</div>
+      <div class="preset-note">
+        자주 사용하는 기준 키워드·조건을 저장해 두었다가, 다음에 불러와서 사용할 수 있습니다.
+      </div>
+
+      <label style="margin-top:4px;">저장된 프리셋</label>
+      <select name="preset">
+        <option value="">-- 선택 --</option>
+        {% for n in presets %}
+          <option value="{{n}}" {% if n == selected %}selected{% endif %}>{{n}}</option>
+        {% endfor %}
+      </select>
+
+      <div class="btn-row">
+        <button type="submit" name="action" value="load">불러오기</button>
+        <button type="submit" name="action" value="delete_preset"
+                onclick="return confirm('선택한 프리셋을 삭제할까요?');">
+          삭제
+        </button>
+      </div>
+
+      <label style="margin-top:14px;">새 프리셋 이름</label>
+      <input name="newname" placeholder="예: 지역명·업종별 키워드 세트">
+      <button type="submit" name="action" value="save">프리셋 저장</button>
+    </div>
+
   </form>
 
   {% if msg %}
@@ -449,7 +498,7 @@ canvas{background:#f9fafb;border-radius:8px;padding:8px;}
   const compColors = compData.map((v, i) => {
     const total = pcData[i] + moData[i];
     if (total >= 100 && v <= 0.8) {
-      return 'rgba(34, 197, 94, 0.9)';   // 초록 = 좋은 키워드
+      return 'rgba(34, 197, 94, 0.9)';   // 초록 = 상대적으로 좋은 키워드
     } else if (v <= 0.9) {
       return 'rgba(245, 158, 11, 0.9)';  // 주황 = 중간
     } else {
