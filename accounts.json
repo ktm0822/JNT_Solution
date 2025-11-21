@@ -5,18 +5,22 @@
   },
   "kangbuk": {
     "password": "gkacademy",
-    "name": "강북제일자동차운전전문학원"
+    "name": "강북제일자동차운전전문학원",
+    "region": "강북"
   },
   "gyeongpo": {
     "password": "gpacademy",
-    "name": "경포자동차운전전문학원"
+    "name": "경포자동차운전전문학원",
+    "region": "포항"
   },
   "burim": {
     "password": "burim1234",
-    "name": "부림자동차운전전문학원"
+    "name": "부림자동차운전전문학원",
+    "region": "경상남도"
   },
   "sgcorp": {
     "password": "1234",
-    "name": "SG상사"
+    "name": "SG상사",
+    "region": "서울"
   }
 }
