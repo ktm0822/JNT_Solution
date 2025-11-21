@@ -342,7 +342,7 @@ canvas{background:#f9fafb;border-radius:8px;padding:8px;}
 
     <!-- ⭐ 1. 리포트 생성에 필요한 핵심 조건 (맨 위 배치) -->
     <label>기준 키워드 (쉼표로 구분)</label>
-    <textarea name="keywords" rows="3" placeholder="예: 운전면허, 1종보통, 2종자동">{{keywords}}</textarea>
+    <textarea name="keywords" rows="3" placeholder="예: 키워드1, 키워드2, 키워드3">{{keywords}}</textarea>
 
     <label>최소 총 검색수</label>
     <input type="number" name="min_total" value="{{min_total or ''}}" placeholder="예: 100">
@@ -958,10 +958,10 @@ button{padding:6px 10px;border:none;border-radius:6px;font-size:13px;cursor:poin
       <input name="new_pw" placeholder="비밀번호">
     </div>
     <div style="margin-top:6px;">
-      <input name="new_name" placeholder="표시 이름 (예: 강북제일자동차운전전문학원)">
+      <input name="new_name" placeholder="표시 이름 (예: 업체명)">
     </div>
     <div style="margin-top:6px;">
-      <input name="new_region" placeholder="지역 (예: 강북, 강릉, 광주)">
+      <input name="new_region" placeholder="지역 (예: 지역명)">
     </div>
     <div style="margin-top:6px;">
       <select name="new_industry">
