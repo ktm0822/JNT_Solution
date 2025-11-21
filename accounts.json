@@ -14,5 +14,9 @@
   "burim": {
     "password": "burim1234",
     "name": "부림자동차운전전문학원"
+  },
+  "sgcorp": {
+    "password": "1234",
+    "name": "SG상사"
   }
 }
