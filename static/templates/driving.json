@@ -1,0 +1,25 @@
+{
+  "industry": "운전면허학원",
+  "report_title": "운전면허학원 키워드 분석 리포트",
+  "good_keyword_rule": "검색량 100 이상 & 경쟁도 0.8 이하",
+
+  "summary_format": "총 {total_keywords}개 키워드 중 {passed_keywords}개가 조건을 통과했습니다. 평균 검색량 {avg_search}회, 평균 경쟁도 {avg_comp}입니다.",
+
+  "recommended_title_patterns": [
+    "{지역} {키워드} 완벽 정리 가이드",
+    "{지역} {키워드} 준비하려면 꼭 알아야 할 핵심",
+    "{지역}에서 {키워드} 할 때 많이 놓치는 3가지",
+    "{지역} {키워드} 선택 기준 완전 정리",
+    "{키워드} 고민 있다면 {지역} 이곳 참고하세요"
+  ],
+
+  "excel_columns": {
+    "relKeyword": "연관 키워드",
+    "monthlyPcQcCnt": "PC 검색수",
+    "monthlyMobileQcCnt": "모바일 검색수",
+    "total": "총 검색수",
+    "compIdx": "경쟁도",
+    "plAvgDepth": "평균 노출 광고수",
+    "baseKeyword": "기준 키워드"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "industry": "인테리어",
+  "report_title": "인테리어 키워드 분석 리포트",
+  "good_keyword_rule": "검색량 100 이상 & 경쟁도 0.8 이하",
+  "summary_format": "총 {total_keywords}개 키워드 중 {passed_keywords}개가 조건을 통과했습니다. 평균 검색량 {avg_search}회, 평균 경쟁도 {avg_comp}입니다.",
+  "recommended_title_patterns": [
+    "{지역} {키워드} 인테리어 전에 꼭 알아야 할 것들",
+    "{지역} {키워드} 견적 뽑을 때 체크해야 할 3가지",
+    "{키워드} 고민된다면 {지역} 인테리어 사례부터 보세요",
+    "{지역} {키워드} 실제 시공 후기 모음",
+    "{지역}에서 {키워드} 할 때 피해야 할 실패 포인트"
+  ],
+  "excel_columns": {
+    "relKeyword": "연관 키워드",
+    "monthlyPcQcCnt": "PC 검색수",
+    "monthlyMobileQcCnt": "모바일 검색수",
+    "total": "총 검색수",
+    "compIdx": "경쟁도",
+    "plAvgDepth": "평균 노출 광고수",
+    "baseKeyword": "기준 키워드"
+  }
+}

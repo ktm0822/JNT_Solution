@@ -1,0 +1,19 @@
+{
+  "industry": "병원",
+  "report_title": "병원 키워드 분석 리포트",
+  "good_keyword_rule": "검색량 100 이상 & 경쟁도 0.8 이하",
+  "summary_format": "총 {total_keywords}개 중 {passed_keywords}개가 조건을 통과했습니다. 평균 검색량 {avg_search}회, 평균 경쟁도 {avg_comp}입니다.",
+  "recommended_title_patterns": [
+    "{지역} {키워드} 잘하는 병원 어디?",
+    "{키워드} 고민 있다면 {지역} 병원 비교하기",
+    "{지역} {키워드} 진료 시 주의해야 할 3가지"
+  ],
+  "excel_columns": {
+    "relKeyword": "연관 키워드",
+    "monthlyPcQcCnt": "PC 검색수",
+    "monthlyMobileQcCnt": "모바일 검색수",
+    "total": "총 검색수",
+    "compIdx": "경쟁도",
+    "plAvgDepth": "평균 노출 광고수"
+  }
+}

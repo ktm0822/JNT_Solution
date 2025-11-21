@@ -1,0 +1,22 @@
+{
+  "industry": "온라인 잡화상점",
+  "report_title": "온라인 잡화상점 키워드 분석 리포트",
+  "good_keyword_rule": "검색량 120 이상 & 경쟁도 0.85 이하",
+  "summary_format": "총 {total_keywords}개 키워드 중 {passed_keywords}개가 조건을 통과했습니다. 평균 검색량 {avg_search}회, 평균 경쟁도 {avg_comp}입니다.",
+  "recommended_title_patterns": [
+    "{지역} {키워드} 온라인으로 저렴하게 사는 방법",
+    "{키워드} 살 때 {지역} 사람들이 많이 찾는 상품은?",
+    "{지역} {키워드} 추천 리스트 한 번에 정리",
+    "{키워드} 구매 전, {지역}에서 많이 검색한 포인트 3가지",
+    "{지역} {키워드} 가격·후기 비교 가이드"
+  ],
+  "excel_columns": {
+    "relKeyword": "연관 키워드",
+    "monthlyPcQcCnt": "PC 검색수",
+    "monthlyMobileQcCnt": "모바일 검색수",
+    "total": "총 검색수",
+    "compIdx": "경쟁도",
+    "plAvgDepth": "평균 노출 광고수",
+    "baseKeyword": "기준 키워드"
+  }
+}

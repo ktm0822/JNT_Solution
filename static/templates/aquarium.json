@@ -1,0 +1,22 @@
+{
+  "industry": "관상어/물생활 샵",
+  "report_title": "관상어·물생활 키워드 분석 리포트",
+  "good_keyword_rule": "검색량 80 이상 & 경쟁도 0.8 이하",
+  "summary_format": "총 {total_keywords}개 키워드 중 {passed_keywords}개가 조건을 통과했습니다. 평균 검색량 {avg_search}회, 평균 경쟁도 {avg_comp}입니다.",
+  "recommended_title_patterns": [
+    "{지역} {키워드} 입문자를 위한 물생활 가이드",
+    "{지역}에서 {키워드} 시작할 때 꼭 알아야 할 기본 세팅",
+    "{키워드} 키울 때 {지역} 사람들이 자주 하는 실수 3가지",
+    "{지역} {키워드} 추천 사료·용품 한 번에 정리",
+    "{지역} 물생활러들이 많이 찾는 {키워드} 정보 모음"
+  ],
+  "excel_columns": {
+    "relKeyword": "연관 키워드",
+    "monthlyPcQcCnt": "PC 검색수",
+    "monthlyMobileQcCnt": "모바일 검색수",
+    "total": "총 검색수",
+    "compIdx": "경쟁도",
+    "plAvgDepth": "평균 노출 광고수",
+    "baseKeyword": "기준 키워드"
+  }
+}
