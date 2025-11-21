@@ -297,7 +297,7 @@ canvas{background:#f9fafb;border-radius:8px;padding:8px;}
 
   {% if msg %}
   <div class="msg">
-    {{msg}}
+    {{msg|safe}}
     {% if downloadable %}
     <br><a href="{{ url_for('download') }}">📥 엑셀 다운로드</a>
     {% endif %}
@@ -472,6 +472,11 @@ def index():
     recommended_groups = []
     blog_title_groups = []
 
+    # 로그인한 계정의 지역명
+    user_info = ACCOUNTS.get(session["user"], {})
+    region = user_info.get("region", "") or ""
+    region = region.strip()
+
     if request.method == "POST":
         action = request.form.get("action")
         keywords = request.form.get("keywords", "")
@@ -606,7 +611,9 @@ def index():
                     chart_count = len(top_df)
                     chart_available = chart_count > 0
 
-                    # 요약문
+                    # ==========================
+                    # 요약문 + 예상 광고비 / 유입 규모 (러프 추정)
+                    # ==========================
                     if not df_filtered.empty:
                         avg_total_all = int(df_filtered["총 검색수"].mean())
                         avg_comp_all = round(df_filtered["경쟁도"].mean(), 2)
@@ -616,11 +623,40 @@ def index():
                             f"평균 검색량 {avg_total_all:,}회, 평균 경쟁도 {avg_comp_all}입니다. "
                             f"(검색량 100 이상 & 경쟁도 0.8 이하 = 좋은 키워드)"
                         )
+
+                        # 🔹 여기서부터는 '추측입니다' 영역 (러프 추정)
+                        total_search_sum = int(df_filtered["총 검색수"].sum())
+
+                        # 클릭율/클릭단가 모두 대략치 (추측입니다)
+                        # 예시 가정:
+                        # - 예상 클릭율: 1% ~ 3%
+                        # - 클릭당 비용: 500원 ~ 1,500원
+                        est_clicks_low = int(total_search_sum * 0.01)
+                        est_clicks_high = int(total_search_sum * 0.03)
+
+                        cpc_low = 500
+                        cpc_high = 1500
+
+                        est_budget_low = est_clicks_low * cpc_low
+                        est_budget_high = est_clicks_high * cpc_high
+
+                        # 만원 단위로 표시
+                        est_budget_low_10k = est_budget_low / 10000
+                        est_budget_high_10k = est_budget_high / 10000
+
+                        estimate_msg = (
+                            "<br><br>※ 아래 수치는 네이버 검색량을 기준으로 예상한 추정치이며, "
+                            "실제 광고 집행 결과와는 다를 수 있습니다.<br>"
+                            f"- 월 예상 클릭수: 약 {est_clicks_low:,} ~ {est_clicks_high:,}회<br>"
+                            f"- 월 예상 광고비: 약 {est_budget_low:,.0f}원 ~ "
+                            f"{est_budget_high:,.0f}원 수준"
+                        )
+
+                        full_msg = f"리포트 생성 완료. {summary_msg}{estimate_msg}"
                     else:
-                        summary_msg = "조건에 맞는 키워드가 없습니다."
+                        full_msg = "조건에 맞는 키워드가 없습니다."
 
                     # 🔹 추천 키워드 조합 (웹용) - 기준 키워드별로 생성
-                    recommended_groups = []
                     if not df_filtered.empty:
                         for base in base_keywords:
                             sub = df_filtered[df_filtered["기준 키워드 출처"] == base]
@@ -648,8 +684,7 @@ def index():
                                     }
                                 )
 
-                    # 🔹 블로그 제목 자동 제안
-                    blog_title_groups = []
+                    # 🔹 블로그 제목 자동 제안 (지역 포함)
                     for group in recommended_groups:
                         base = group["base"]
                         phrases = group["phrases"]
@@ -657,10 +692,18 @@ def index():
                             continue
                         main_kw = phrases[0]
 
+                        # 지역명이 있으면 "강북 ", "강북에서 " 등으로 사용
+                        if region:
+                            region_prefix = f"{region} "
+                            region_in = f"{region}에서 "
+                        else:
+                            region_prefix = ""
+                            region_in = ""
+
                         titles = [
-                            f"{main_kw} 완벽 정리: 처음 준비할 때 꼭 알아야 할 핵심",
-                            f"처음이라면 꼭 봐야 할 {main_kw} 가이드",
-                            f"{main_kw} 할 때 많이 놓치는 3가지 포인트",
+                            f"{region_prefix}{main_kw} 완벽 정리: 처음 준비할 때 꼭 알아야 할 핵심",
+                            f"{region_in}{main_kw} 준비한다면? 초보자 필수 가이드",
+                            f"{region_prefix}{main_kw} 할 때 많이 놓치는 3가지 포인트",
                         ]
 
                         blog_title_groups.append(
@@ -703,7 +746,7 @@ def index():
                     }
 
                     downloadable = True
-                    msg = f"리포트 생성 완료. {summary_msg}"
+                    msg = full_msg
 
         else:
             msg = "알 수 없는 동작입니다."
@@ -729,7 +772,6 @@ def index():
         recommended_groups=recommended_groups,
         blog_title_groups=blog_title_groups,
     )
-
 
 # ==========================
 # 계정 관리 (관리자 전용)
@@ -760,11 +802,12 @@ button{padding:6px 10px;border:none;border-radius:6px;font-size:13px;cursor:poin
 
   <h2 style="font-size:14px;margin-top:10px;">현재 계정 목록</h2>
   <table>
-    <tr><th>아이디</th><th>이름</th><th>비고</th><th>삭제</th></tr>
+    <tr><th>아이디</th><th>이름</th><th>지역</th><th>비고</th><th>삭제</th></tr>
     {% for uid, info in accounts.items() %}
       <tr>
         <td>{{uid}}</td>
         <td>{{info.name}}</td>
+        <td>{{info.region or '-'}}</td>
         <td>{% if uid == 'admin' %}관리자 계정{% else %}-{% endif %}</td>
         <td>
           {% if uid != 'admin' %}
@@ -792,6 +835,9 @@ button{padding:6px 10px;border:none;border-radius:6px;font-size:13px;cursor:poin
     </div>
     <div style="margin-top:6px;">
       <input name="new_name" placeholder="표시 이름 (예: 강북제일자동차운전전문학원)">
+    </div>
+    <div style="margin-top:6px;">
+      <input name="new_region" placeholder="지역 (예: 강북, 강릉, 광주)">
     </div>
     <button class="btn-add" type="submit">계정 추가</button>
   </form>
@@ -825,18 +871,29 @@ def manage_accounts():
             new_uid = request.form.get("new_uid", "").strip()
             new_pw = request.form.get("new_pw", "").strip()
             new_name = request.form.get("new_name", "").strip()
+            new_region = request.form.get("new_region", "").strip()
             if not new_uid or not new_pw or not new_name:
                 msg = "아이디, 비밀번호, 이름을 모두 입력해 주세요."
             elif new_uid in ACCOUNTS:
                 msg = "이미 존재하는 아이디입니다."
             else:
-                ACCOUNTS[new_uid] = {"password": new_pw, "name": new_name}
+                ACCOUNTS[new_uid] = {
+                    "password": new_pw,
+                    "name": new_name,
+                    "region": new_region,
+                }
                 save_accounts()
                 msg = f"계정 '{new_uid}'이(가) 추가되었습니다."
         else:
             msg = "알 수 없는 동작입니다."
 
-    accounts_for_view = {uid: type("obj", (), info) for uid, info in ACCOUNTS.items()}
+    # view용 객체로 변환 (info.name, info.region 등 접근 가능하게)
+    accounts_for_view = {}
+    for uid, info in ACCOUNTS.items():
+        obj = type("obj", (), {})()
+        obj.name = info.get("name", "")
+        obj.region = info.get("region", "")
+        accounts_for_view[uid] = obj
 
     return render_template_string(
         ADMIN_HTML,
