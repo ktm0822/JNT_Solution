@@ -1,26 +1,38 @@
 {
   "admin": {
     "password": "1234",
-    "name": "관리자"
+    "name": "관리자",
+    "region": "",
+    "industry": ""
   },
   "kangbuk": {
-    "password": "gkacademy",
+    "password": "kb1234",
     "name": "강북제일자동차운전전문학원",
-    "region": "강북"
+    "region": "강북",
+    "industry": "driving"
   },
   "gyeongpo": {
-    "password": "gpacademy",
+    "password": "gp1234",
     "name": "경포자동차운전전문학원",
-    "region": "포항"
+    "region": "포항",
+    "industry": "driving"
   },
   "burim": {
-    "password": "burim1234",
+    "password": "br1234",
     "name": "부림자동차운전전문학원",
-    "region": "경상남도"
+    "region": "경상남도",
+    "industry": "driving"
   },
   "sgcorp": {
     "password": "1234",
     "name": "SG상사",
-    "region": "서울"
+    "region": "",
+    "industry": "aquarium"
+  },
+  "naturedr": {
+    "password": "nd1234",
+    "name": "연세자연의원",
+    "region": "서울",
+    "industry": "hospital"
   }
 }

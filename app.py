@@ -28,7 +28,6 @@ API_KEY = "01000000000ea500e2d816aa0a9bc44418f20e0f55571f42f79ae469d57353f9337dd
 SECRET_KEY = "AQAAAAAOpQDi2BaqCpvERBjyDg9Vw0VyAu/CjIVNHsmmqld7Ag=="
 CUSTOMER_ID = 4174381
 
-
 # ==========================
 # 회사 정보 (리포트 하단 표)
 # ==========================
@@ -64,6 +63,53 @@ load_accounts()
 
 # 유저별 마지막 엑셀 저장
 LAST_EXCEL = {}  # { user_id: {"bytes": b"...", "filename": "..." } }
+
+# ==========================
+# 업종 템플릿 로딩 세팅
+# ==========================
+TEMPLATE_DIR = os.path.join(os.path.dirname(__file__), "static", "templates")
+
+
+def load_industry_template(industry_code: str):
+    """
+    업종 코드(driving, education, hospital, realestate, beauty, food, onlineshop, aquarium, interior 등)에 따라
+    static/templates/{code}.json 을 로딩한다.
+    업종 코드가 비어 있으면(예: admin) 기본 템플릿을 사용한다.
+    """
+    code_raw = (industry_code or "").strip()
+
+    # 기본 템플릿 (업종 공통)
+    default = {
+        "industry": "키워드 리포트",
+        "report_title": "J&T Solution 키워드 리포트",
+        "good_keyword_rule": "검색량 100 이상 & 경쟁도 0.8 이하 = 좋은 키워드",
+        "summary_format": (
+            "총 {total_keywords}개 키워드 중 {passed_keywords}개가 조건을 통과했습니다. "
+            "평균 검색량 {avg_search}회, 평균 경쟁도 {avg_comp}입니다."
+        ),
+        "recommended_title_patterns": [
+            "{지역} {키워드} 완벽 정리 가이드",
+            "{지역}에서 {키워드} 준비하려면?",
+            "{키워드} 할 때 꼭 알아야 할 3가지"
+        ],
+    }
+
+    # 업종 코드가 없으면(예: admin) 기본 템플릿 사용
+    if not code_raw:
+        return default
+
+    # 업종 코드가 있으면 해당 json 로딩
+    path = os.path.join(TEMPLATE_DIR, f"{code_raw}.json")
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        merged = default.copy()
+        merged.update(data)
+        return merged
+    except Exception:
+        # 파일이 없거나 깨지면 기본 템플릿
+        return default
+
 
 # ==========================
 # Flask 기본 설정
@@ -175,7 +221,7 @@ def login():
         user = ACCOUNTS.get(uid)
         if user and user["password"] == pw:
             session["user"] = uid
-            session["name"] = user["name"]
+            session["name"] = user.get("name", uid)
             return redirect("/")
         return render_template_string(
             LOGIN_HTML, msg="아이디 또는 비밀번호가 올바르지 않습니다."
@@ -254,8 +300,8 @@ canvas{background:#f9fafb;border-radius:8px;padding:8px;}
   <div class="logo">
     <img src="{{ url_for('static', filename='logo.png') }}" onerror="this.style.display='none'">
     <div>
-      <div><strong>J&T Solution 키워드 리포트</strong></div>
-      <div class="sub">네이버 검색 데이터를 기반으로 한 실전형 키워드 분석 도구</div>
+      <div><strong>{{ report_title }}</strong></div>
+      <div class="sub">네이버 검색 데이터를 기반으로 한 {{ industry_name }} 키워드 분석 도구</div>
     </div>
   </div>
 
@@ -274,7 +320,7 @@ canvas{background:#f9fafb;border-radius:8px;padding:8px;}
     </button>
 
     <label>새 프리셋 이름</label>
-    <input name="newname" placeholder="예: 강릉 ○○학원 기본세트">
+    <input name="newname" placeholder="예: 지역명·업종별 키워드 세트">
     <button name="action" value="save">프리셋 저장</button>
 
     <label>기준 키워드 (쉼표로 구분)</label>
@@ -472,10 +518,32 @@ def index():
     recommended_groups = []
     blog_title_groups = []
 
-    # 로그인한 계정의 지역명
+    # 로그인한 계정의 지역명/업종
     user_info = ACCOUNTS.get(session["user"], {})
     region = user_info.get("region", "") or ""
     region = region.strip()
+    industry_code = user_info.get("industry", "driving")
+
+    # 업종 템플릿 로드
+    tpl = load_industry_template(industry_code)
+    report_title = tpl.get("report_title", "J&T Solution 키워드 리포트")
+    industry_name = tpl.get("industry", "키워드 리포트")
+    good_keyword_rule = tpl.get(
+        "good_keyword_rule", "검색량 100 이상 & 경쟁도 0.8 이하 = 좋은 키워드"
+    )
+    summary_format = tpl.get(
+        "summary_format",
+        "총 {total_keywords}개 키워드 중 {passed_keywords}개가 조건을 통과했습니다. "
+        "평균 검색량 {avg_search}회, 평균 경쟁도 {avg_comp}입니다.",
+    )
+    title_patterns = tpl.get(
+        "recommended_title_patterns",
+        [
+            "{지역} {키워드} 완벽 정리 가이드",
+            "{지역}에서 {키워드} 준비하려면?",
+            "{키워드} 할 때 꼭 알아야 할 3가지",
+        ],
+    )
 
     if request.method == "POST":
         action = request.form.get("action")
@@ -617,18 +685,22 @@ def index():
                     if not df_filtered.empty:
                         avg_total_all = int(df_filtered["총 검색수"].mean())
                         avg_comp_all = round(df_filtered["경쟁도"].mean(), 2)
+
+                        # 템플릿 기반 요약문
+                        summary_core = summary_format.format(
+                            total_keywords=len(df_all),
+                            passed_keywords=len(df_filtered),
+                            avg_search=avg_total_all,
+                            avg_comp=avg_comp_all,
+                        )
                         summary_msg = (
-                            f"총 {len(df_all)}개 키워드 중 "
-                            f"{len(df_filtered)}개가 조건을 통과했습니다. "
-                            f"평균 검색량 {avg_total_all:,}회, 평균 경쟁도 {avg_comp_all}입니다. "
-                            f"(검색량 100 이상 & 경쟁도 0.8 이하 = 좋은 키워드)"
+                            f"리포트 생성 완료. {summary_core} ({good_keyword_rule})<br>"
                         )
 
                         # 🔹 여기서부터는 '추측입니다' 영역 (러프 추정)
                         total_search_sum = int(df_filtered["총 검색수"].sum())
 
-                        # 클릭율/클릭단가 모두 대략치 (추측입니다)
-                        # 예시 가정:
+                        # 예시 가정 (추측입니다):
                         # - 예상 클릭율: 1% ~ 3%
                         # - 클릭당 비용: 500원 ~ 1,500원
                         est_clicks_low = int(total_search_sum * 0.01)
@@ -640,19 +712,15 @@ def index():
                         est_budget_low = est_clicks_low * cpc_low
                         est_budget_high = est_clicks_high * cpc_high
 
-                        # 만원 단위로 표시
-                        est_budget_low_10k = est_budget_low / 10000
-                        est_budget_high_10k = est_budget_high / 10000
-
                         estimate_msg = (
-                            "<br><br>※ 아래 수치는 네이버 검색량을 기준으로 예상한 추정치이며, "
-                            "실제 광고 집행 결과와는 다를 수 있습니다.<br>"
+                            "<br>※ 아래 수치는 네이버 검색량을 기준으로 한 러프 추정치이며, "
+                            "실제 광고 집행 결과와는 다를 수 있습니다. (추측입니다)<br>"
                             f"- 월 예상 클릭수: 약 {est_clicks_low:,} ~ {est_clicks_high:,}회<br>"
                             f"- 월 예상 광고비: 약 {est_budget_low:,.0f}원 ~ "
                             f"{est_budget_high:,.0f}원 수준"
                         )
 
-                        full_msg = f"리포트 생성 완료. {summary_msg}{estimate_msg}"
+                        full_msg = summary_msg + estimate_msg
                     else:
                         full_msg = "조건에 맞는 키워드가 없습니다."
 
@@ -684,7 +752,8 @@ def index():
                                     }
                                 )
 
-                    # 🔹 블로그 제목 자동 제안 (지역 포함)
+                    # 🔹 블로그 제목 자동 제안 (업종 템플릿 + 지역 포함)
+                    region_placeholder = region if region else ""
                     for group in recommended_groups:
                         base = group["base"]
                         phrases = group["phrases"]
@@ -692,19 +761,14 @@ def index():
                             continue
                         main_kw = phrases[0]
 
-                        # 지역명이 있으면 "강북 ", "강북에서 " 등으로 사용
-                        if region:
-                            region_prefix = f"{region} "
-                            region_in = f"{region}에서 "
-                        else:
-                            region_prefix = ""
-                            region_in = ""
-
-                        titles = [
-                            f"{region_prefix}{main_kw} 완벽 정리: 처음 준비할 때 꼭 알아야 할 핵심",
-                            f"{region_in}{main_kw} 준비한다면? 초보자 필수 가이드",
-                            f"{region_prefix}{main_kw} 할 때 많이 놓치는 3가지 포인트",
-                        ]
+                        titles = []
+                        for pat in title_patterns[:5]:
+                            t = pat.replace("{지역}", region_placeholder).replace(
+                                "{키워드}", main_kw
+                            )
+                            # 지역이 없을 때 생길 수 있는 이중 공백 정리
+                            t = " ".join(t.split())
+                            titles.append(t)
 
                         blog_title_groups.append(
                             {
@@ -771,7 +835,10 @@ def index():
         summary_table=summary_table,
         recommended_groups=recommended_groups,
         blog_title_groups=blog_title_groups,
+        report_title=report_title,
+        industry_name=industry_name,
     )
+
 
 # ==========================
 # 계정 관리 (관리자 전용)
@@ -780,14 +847,14 @@ ADMIN_HTML = """
 <!doctype html><html lang="ko"><head><meta charset="utf-8">
 <title>계정 관리 - J&T Solution</title>
 <style>
-body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f4f5f7;max-width:800px;margin:40px auto;padding:0 16px;}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f4f5f7;max-width:900px;margin:40px auto;padding:0 16px;}
 .card{background:white;padding:24px;border-radius:14px;box-shadow:0 6px 18px rgba(0,0,0,0.05);}
 h1{font-size:20px;margin-bottom:12px;}
 table{width:100%;border-collapse:collapse;margin-top:12px;font-size:13px;}
 th,td{border:1px solid #e5e7eb;padding:6px 8px;text-align:left;}
 th{background:#f9fafb;}
 form.inline{display:inline;}
-input{padding:6px;border-radius:6px;border:1px solid #d1d5db;font-size:13px;margin-right:6px;}
+input,select{padding:6px;border-radius:6px;border:1px solid #d1d5db;font-size:13px;margin-right:6px;}
 button{padding:6px 10px;border:none;border-radius:6px;font-size:13px;cursor:pointer;}
 .btn-del{background:#fee2e2;color:#b91c1c;}
 .btn-back{background:#e5e7eb;color:#111827;margin-bottom:10px;}
@@ -802,12 +869,20 @@ button{padding:6px 10px;border:none;border-radius:6px;font-size:13px;cursor:poin
 
   <h2 style="font-size:14px;margin-top:10px;">현재 계정 목록</h2>
   <table>
-    <tr><th>아이디</th><th>이름</th><th>지역</th><th>비고</th><th>삭제</th></tr>
+    <tr>
+      <th>아이디</th>
+      <th>이름</th>
+      <th>지역</th>
+      <th>업종코드</th>
+      <th>비고</th>
+      <th>삭제</th>
+    </tr>
     {% for uid, info in accounts.items() %}
       <tr>
         <td>{{uid}}</td>
         <td>{{info.name}}</td>
         <td>{{info.region or '-'}}</td>
+        <td>{{info.industry or '-'}}</td>
         <td>{% if uid == 'admin' %}관리자 계정{% else %}-{% endif %}</td>
         <td>
           {% if uid != 'admin' %}
@@ -838,6 +913,19 @@ button{padding:6px 10px;border:none;border-radius:6px;font-size:13px;cursor:poin
     </div>
     <div style="margin-top:6px;">
       <input name="new_region" placeholder="지역 (예: 강북, 강릉, 광주)">
+    </div>
+    <div style="margin-top:6px;">
+      <select name="new_industry">
+        <option value="driving">운전면허학원 (driving)</option>
+        <option value="education">교육 (education)</option>
+        <option value="hospital">병원 (hospital)</option>
+        <option value="realestate">부동산 (realestate)</option>
+        <option value="beauty">뷰티 (beauty)</option>
+        <option value="food">음식 (food)</option>
+        <option value="onlineshop">온라인 잡화 (onlineshop)</option>
+        <option value="aquarium">관상어/물생활 (aquarium)</option>
+        <option value="interior">인테리어 (interior)</option>
+      </select>
     </div>
     <button class="btn-add" type="submit">계정 추가</button>
   </form>
@@ -872,6 +960,7 @@ def manage_accounts():
             new_pw = request.form.get("new_pw", "").strip()
             new_name = request.form.get("new_name", "").strip()
             new_region = request.form.get("new_region", "").strip()
+            new_industry = request.form.get("new_industry", "").strip() or "driving"
             if not new_uid or not new_pw or not new_name:
                 msg = "아이디, 비밀번호, 이름을 모두 입력해 주세요."
             elif new_uid in ACCOUNTS:
@@ -881,18 +970,20 @@ def manage_accounts():
                     "password": new_pw,
                     "name": new_name,
                     "region": new_region,
+                    "industry": new_industry,
                 }
                 save_accounts()
                 msg = f"계정 '{new_uid}'이(가) 추가되었습니다."
         else:
             msg = "알 수 없는 동작입니다."
 
-    # view용 객체로 변환 (info.name, info.region 등 접근 가능하게)
+    # view용 객체로 변환 (info.name, info.region, info.industry 등 접근 가능하게)
     accounts_for_view = {}
     for uid, info in ACCOUNTS.items():
         obj = type("obj", (), {})()
         obj.name = info.get("name", "")
         obj.region = info.get("region", "")
+        obj.industry = info.get("industry", "")
         accounts_for_view[uid] = obj
 
     return render_template_string(
