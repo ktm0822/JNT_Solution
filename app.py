@@ -352,6 +352,20 @@ canvas{background:#f9fafb;border-radius:8px;padding:8px;}
     {% endfor %}
   </div>
   {% endif %}
+
+  {% if blog_title_groups %}
+  <div class="chart-section">
+    <h3>✏️ 블로그 제목 아이디어</h3>
+    {% for g in blog_title_groups %}
+      <h4 style="font-size:13px;margin-top:8px;">[{{ g.base }}]</h4>
+      <ul class="recommend-list">
+        {% for t in g.titles %}
+          <li>{{ t }}</li>
+        {% endfor %}
+      </ul>
+    {% endfor %}
+  </div>
+  {% endif %}
 </div>
 
 {% if chart_available %}
@@ -385,7 +399,7 @@ canvas{background:#f9fafb;border-radius:8px;padding:8px;}
     }
   });
 
-  // 경쟁도 차트 - 좋은 키워드 색상 표시
+  // 경쟁도 차트 - 색상으로 경쟁도 레벨 표시
   const compColors = compData.map((v, i) => {
     const total = pcData[i] + moData[i];
     if (total >= 100 && v <= 0.8) {
@@ -453,9 +467,10 @@ def index():
     chart_labels, chart_pc, chart_mo, chart_comp = [], [], [], []
     chart_count = 0
 
-    # 기준 키워드별 요약 테이블 + 추천 키워드 조합
+    # 기준 키워드별 요약 테이블 + 추천 키워드 조합 + 블로그 제목 그룹
     summary_table = []
     recommended_groups = []
+    blog_title_groups = []
 
     if request.method == "POST":
         action = request.form.get("action")
@@ -633,6 +648,28 @@ def index():
                                     }
                                 )
 
+                    # 🔹 블로그 제목 자동 제안
+                    blog_title_groups = []
+                    for group in recommended_groups:
+                        base = group["base"]
+                        phrases = group["phrases"]
+                        if not phrases:
+                            continue
+                        main_kw = phrases[0]
+
+                        titles = [
+                            f"{main_kw} 완벽 정리: 처음 준비할 때 꼭 알아야 할 핵심",
+                            f"처음이라면 꼭 봐야 할 {main_kw} 가이드",
+                            f"{main_kw} 할 때 많이 놓치는 3가지 포인트",
+                        ]
+
+                        blog_title_groups.append(
+                            {
+                                "base": base,
+                                "titles": titles,
+                            }
+                        )
+
                     # 엑셀 저장 (전체, 필터, 회사정보)
                     info_rows = [
                         {"항목": k, "내용": v} for k, v in COMPANY_INFO.items()
@@ -690,6 +727,7 @@ def index():
         chart_count=chart_count,
         summary_table=summary_table,
         recommended_groups=recommended_groups,
+        blog_title_groups=blog_title_groups,
     )
 
 
