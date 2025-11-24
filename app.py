@@ -762,8 +762,8 @@ def index():
                         est_budget_high = est_clicks_high * cpc_high
 
                         estimate_msg = (
-                            "<br>※ 아래 수치는 네이버 검색량을 기준으로 한 러프 추정치이며, "
-                            "실제 광고 집행 결과와는 다를 수 있습니다. (추측입니다)<br>"
+                            "<br>※ 아래 수치는 네이버 검색량을 기준의 예상 광고비용이며, "
+                            "실제 광고 집행 결과와는 다를 수 있습니다.<br>"
                             f"- 월 예상 클릭수: 약 {est_clicks_low:,} ~ {est_clicks_high:,}회<br>"
                             f"- 월 예상 광고비: 약 {est_budget_low:,.0f}원 ~ "
                             f"{est_budget_high:,.0f}원 수준"
