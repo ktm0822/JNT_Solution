@@ -342,7 +342,7 @@ canvas{background:#f9fafb;border-radius:8px;padding:8px;}
 
     <!-- ⭐ 1. 리포트 생성에 필요한 핵심 조건 (맨 위 배치) -->
     <label>기준 키워드 (쉼표로 구분)</label>
-    <textarea name="keywords" rows="3" placeholder="예: 키워드1, 키워드2, 키워드3">{{keywords}}</textarea>
+    <textarea name="keywords" rows="3" placeholder="키워드1, 키워드2, 키워드3 (키워드 입력시 띄어쓰기는 절대불가, 예: 숨은 맛집->숨은맛집으로 인식)">{{keywords}}</textarea>
 
     <label>최소 총 검색수</label>
     <input type="number" name="min_total" value="{{min_total or ''}}" placeholder="예: 100">
