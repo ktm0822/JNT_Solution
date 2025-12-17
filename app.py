@@ -191,25 +191,248 @@ def parse_competition(v):
 # 로그인 / 로그아웃
 # ==========================
 LOGIN_HTML = """
-<!doctype html><html lang="ko"><head><meta charset="utf-8">
-<title>로그인 - J&T Solution</title>
-<style>
-body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f4f5f7;display:flex;align-items:center;justify-content:center;height:100vh;}
-.card{background:white;padding:40px 50px;border-radius:14px;box-shadow:0 8px 20px rgba(0,0,0,0.08);width:360px;}
-h1{text-align:center;font-size:22px;margin-bottom:20px;}
-input{width:100%;padding:10px;margin-top:8px;border:1px solid #ccc;border-radius:8px;}
-button{width:100%;margin-top:16px;padding:10px;border:none;border-radius:8px;background:#111827;color:#fff;font-weight:600;cursor:pointer;}
-.msg{text-align:center;margin-top:10px;color:#e11d48;font-size:13px;}
-</style></head><body>
-<div class="card">
-  <h1>J&T Solution<br>키워드 리포트 로그인</h1>
-  <form method="post">
-    <input name="username" placeholder="아이디 입력">
-    <input name="password" type="password" placeholder="비밀번호 입력">
-    <button type="submit">로그인</button>
-  </form>
-  {% if msg %}<div class="msg">{{msg}}</div>{% endif %}
-</div></body></html>
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>로그인 - J&T Solution</title>
+  <style>
+    :root{
+      --bg1:#0b1220;
+      --bg2:#111827;
+      --card:#0f172a;
+      --muted:#94a3b8;
+      --line:#1f2937;
+      --text:#e5e7eb;
+      --white:#ffffff;
+      --accent:#22c55e;
+      --accent2:#38bdf8;
+      --danger:#fb7185;
+    }
+    *{box-sizing:border-box;}
+    body{
+      margin:0;
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      color:var(--text);
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:24px;
+      background:
+        radial-gradient(1200px 600px at 20% 10%, rgba(56,189,248,0.20), transparent 55%),
+        radial-gradient(900px 500px at 80% 30%, rgba(34,197,94,0.16), transparent 55%),
+        linear-gradient(180deg, var(--bg1), var(--bg2));
+    }
+    .shell{
+      width:100%;
+      max-width:980px;
+      display:grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap:18px;
+      align-items:stretch;
+    }
+    .hero{
+      border:1px solid rgba(148,163,184,0.12);
+      background:linear-gradient(180deg, rgba(15,23,42,0.70), rgba(2,6,23,0.65));
+      border-radius:18px;
+      padding:28px;
+      overflow:hidden;
+      position:relative;
+      box-shadow:0 20px 60px rgba(0,0,0,0.35);
+    }
+    .hero:before{
+      content:"";
+      position:absolute;
+      inset:-2px;
+      background: radial-gradient(600px 250px at 30% 0%, rgba(56,189,248,0.16), transparent 60%),
+                  radial-gradient(520px 220px at 70% 20%, rgba(34,197,94,0.12), transparent 55%);
+      pointer-events:none;
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      position:relative;
+    }
+    .brand img{
+      width:40px;height:40px;
+      border-radius:10px;
+      background:rgba(255,255,255,0.08);
+      border:1px solid rgba(148,163,184,0.14);
+      padding:6px;
+    }
+    .brand .t1{font-weight:800; font-size:18px; letter-spacing:-0.02em;}
+    .brand .t2{font-size:12px; color:var(--muted); margin-top:2px;}
+    .hero h1{
+      position:relative;
+      margin:22px 0 8px;
+      font-size:26px;
+      line-height:1.25;
+      letter-spacing:-0.03em;
+    }
+    .hero p{
+      position:relative;
+      margin:0;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.55;
+      max-width:46ch;
+    }
+    .chips{
+      position:relative;
+      margin-top:18px;
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+    }
+    .chip{
+      font-size:11px;
+      color:#cbd5e1;
+      border:1px solid rgba(148,163,184,0.16);
+      background:rgba(2,6,23,0.35);
+      padding:6px 10px;
+      border-radius:999px;
+    }
+    .card{
+      border:1px solid rgba(148,163,184,0.12);
+      background:rgba(2,6,23,0.55);
+      border-radius:18px;
+      padding:22px;
+      box-shadow:0 20px 60px rgba(0,0,0,0.35);
+    }
+    .card h2{
+      margin:0 0 6px;
+      font-size:16px;
+      letter-spacing:-0.02em;
+    }
+    .card .sub{
+      margin:0 0 14px;
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.5;
+    }
+    .field{
+      margin-top:10px;
+    }
+    .label{
+      display:block;
+      font-size:11px;
+      color:#cbd5e1;
+      margin-bottom:6px;
+    }
+    input{
+      width:100%;
+      padding:11px 12px;
+      border-radius:12px;
+      border:1px solid rgba(148,163,184,0.18);
+      background:rgba(15,23,42,0.65);
+      color:var(--text);
+      font-size:13px;
+      outline:none;
+    }
+    input:focus{
+      border-color: rgba(56,189,248,0.55);
+      box-shadow: 0 0 0 3px rgba(56,189,248,0.14);
+    }
+    .btn{
+      width:100%;
+      margin-top:14px;
+      padding:11px 12px;
+      border:none;
+      border-radius:12px;
+      font-size:13px;
+      font-weight:700;
+      cursor:pointer;
+      color:#052e1d;
+      background: linear-gradient(90deg, var(--accent), #86efac);
+    }
+    .btn:hover{filter:brightness(0.98);}
+    .hint{
+      margin-top:10px;
+      font-size:11px;
+      color:var(--muted);
+      line-height:1.45;
+    }
+    .msg{
+      margin-top:12px;
+      padding:10px 12px;
+      border-radius:12px;
+      background: rgba(251,113,133,0.10);
+      border:1px solid rgba(251,113,133,0.25);
+      color:#fecdd3;
+      font-size:12px;
+    }
+    .footer{
+      margin-top:14px;
+      font-size:11px;
+      color:rgba(148,163,184,0.85);
+      text-align:center;
+    }
+    @media (max-width: 860px){
+      .shell{grid-template-columns:1fr; max-width:520px;}
+      .hero{display:none;}
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <div class="hero">
+      <div class="brand">
+        <img src="{{ url_for('static', filename='logo.png') }}" onerror="this.style.display='none'">
+        <div>
+          <div class="t1">J&T Solution</div>
+          <div class="t2">Naver Keyword Report System</div>
+        </div>
+      </div>
+
+      <h1>키워드 리포트</h1>
+      <p>
+        네이버 검색 데이터를 기반으로 키워드 규모·경쟁도를 빠르게 확인하고,
+        리포트 엑셀로 정리할 수 있습니다.
+      </p>
+
+      <div class="chips">
+        <div class="chip">키워드 분석</div>
+        <div class="chip">경쟁도 시각화</div>
+        <div class="chip">엑셀 리포트</div>
+        <div class="chip">프리셋 저장</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>계정 로그인</h2>
+      <p class="sub">발급받은 아이디/비밀번호로 접속하세요.</p>
+
+      <form method="post" autocomplete="on">
+        <div class="field">
+          <span class="label">아이디</span>
+          <input name="username" placeholder="아이디" autocomplete="username" autofocus>
+        </div>
+
+        <div class="field">
+          <span class="label">비밀번호</span>
+          <input name="password" type="password" placeholder="비밀번호" autocomplete="current-password">
+        </div>
+
+        <button class="btn" type="submit">로그인</button>
+      </form>
+
+      <div class="hint">
+        문의: 제이앤티솔루션 · 김태민 이사 · 010-7140-1306<br>
+        * 계정 분실 시 담당자에게 연락 주세요.
+      </div>
+
+      {% if msg %}
+      <div class="msg">{{msg}}</div>
+      {% endif %}
+
+      <div class="footer">© {{ datetime.utcnow().year }} J&T Solution</div>
+    </div>
+  </div>
+</body>
+</html>
 """
 
 
@@ -223,10 +446,9 @@ def login():
             session["user"] = uid
             session["name"] = user.get("name", uid)
             return redirect("/")
-        return render_template_string(
-            LOGIN_HTML, msg="아이디 또는 비밀번호가 올바르지 않습니다."
-        )
-    return render_template_string(LOGIN_HTML, msg=None)
+        return render_template_string(LOGIN_HTML, msg="아이디 또는 비밀번호가 올바르지 않습니다.", datetime=datetime)
+
+    return render_template_string(LOGIN_HTML, msg=None, datetime=datetime)
 
 
 @app.route("/logout")
@@ -342,7 +564,7 @@ canvas{background:#f9fafb;border-radius:8px;padding:8px;}
 
     <!-- ⭐ 1. 리포트 생성에 필요한 핵심 조건 (맨 위 배치) -->
     <label>기준 키워드 (쉼표로 구분)</label>
-    <textarea name="keywords" rows="3" placeholder="키워드1, 키워드2, 키워드3 (키워드 입력시 띄어쓰기는 절대불가, 예: 숨은 맛집->숨은맛집으로 인식)">{{keywords}}</textarea>
+    <textarea name="keywords" rows="3" placeholder="키워드1, 키워드2, 키워드3 (키워드 입력시 띄어쓰기는 불가, 예: 숨은 맛집->숨은맛집으로 인식)">{{keywords}}</textarea>
 
     <label>최소 총 검색수</label>
     <input type="number" name="min_total" value="{{min_total or ''}}" placeholder="예: 100">
@@ -961,7 +1183,7 @@ button{padding:6px 10px;border:none;border-radius:6px;font-size:13px;cursor:poin
       <input name="new_name" placeholder="표시 이름 (예: 업체명)">
     </div>
     <div style="margin-top:6px;">
-      <input name="new_region" placeholder="지역 (예: 지역명)">
+      <input name="new_region" placeholder="지역 (예: 서울, 경기, 경북, 전북)">
     </div>
     <div style="margin-top:6px;">
       <select name="new_industry">
