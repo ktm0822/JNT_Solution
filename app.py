@@ -537,27 +537,74 @@ canvas{background:#f9fafb;border-radius:8px;padding:8px;}
 .preset-note{font-size:12px;color:#6b7280;margin-bottom:8px;}
 .btn-row{display:flex;gap:8px;margin-top:8px;}
 .btn-row button{flex:1;margin-top:0;}
+
+.premium-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 24px;
+  margin-bottom: 20px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #0f172a, #020617);
+  color: #fff;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.25);
+}
+
+.premium-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.premium-left img {
+  height: 42px;
+  border-radius: 8px;
+}
+
+.premium-title {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.premium-sub {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.premium-right {
+  text-align: right;
+  font-size: 13px;
+}
+
+.premium-right a {
+  color: #93c5fd;
+  text-decoration: none;
+  margin-left: 10px;
+}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head><body>
 <div class="card">
-  <div class="topbar">
-    <div>👤 로그인: {{session['name']}}</div>
-    <div>
-      {% if session['user'] == 'admin' %}
-      <a href="{{ url_for('manage_accounts') }}" class="admin-link">계정 관리</a>
-      {% endif %}
-      <a href="{{ url_for('logout') }}" class="logout">로그아웃</a>
+  <div class="premium-header">
+    <div class="premium-left">
+      <img src="{{ url_for('static', filename='logo.png') }}"
+           onerror="this.style.display='none'">
+      <div>
+        <div class="premium-title">{{ report_title }}</div>
+        <div class="premium-sub">
+          Naver Keyword Report System · {{ industry_name }}
+        </div>
+      </div>
     </div>
-  </div>
 
-  <div class="logo">
-    <img src="{{ url_for('static', filename='logo.png') }}" onerror="this.style.display='none'">
-    <div>
-      <div><strong>{{ report_title }}</strong></div>
-      <div class="sub">네이버 검색 데이터를 기반으로 한 {{ industry_name }} 키워드 분석 도구</div>
+    <div class="premium-right">
+      👤 {{ session['name'] }}<br>
+      {% if session['user'] == 'admin' %}
+        <a href="{{ url_for('manage_accounts') }}">관리자</a>
+      {% endif %}
+      <a href="{{ url_for('logout') }}">로그아웃</a>
     </div>
-  </div>
+</div>
 
   <!-- 하나의 폼 안에서: 위는 '리포트 조건', 아래는 '프리셋 관리(선택)' -->
   <form method="post">
