@@ -4,10 +4,13 @@ import hashlib
 import base64
 import requests
 import json
+import os
+import random
 import pandas as pd
+
 from io import BytesIO
 from datetime import datetime
-import os
+from bs4 import BeautifulSoup
 
 from flask import (
     Flask,
@@ -152,6 +155,75 @@ def fetch_keyword_stats(base_keyword):
     res = requests.get(BASE_URL + uri, headers=headers, params=params, timeout=10)
     res.raise_for_status()
     return res.json().get("keywordList", [])
+
+
+def check_blog_duplication(full_text):
+    """
+    원고를 받아 문장을 추출하고, 네이버에 검색하여 중복 여부를 확인
+    """
+    # 1. 문장 분리 (줄바꿈 및 마침표 기준)
+    # 너무 짧은 문장(15자 미만)은 검사 의미가 없으므로 제외
+    sentences = [
+        s.strip()
+        for s in full_text.replace("\n", ".").split(".")
+        if len(s.strip()) > 15
+    ]
+
+    if not sentences:
+        return None, "검사할 수 있는 긴 문장이 없습니다. (15자 이상)"
+
+    # 2. 랜덤으로 3~5개 문장 추출
+    check_count = min(5, len(sentences))
+    target_sentences = random.sample(sentences, check_count)
+
+    results = []
+
+    # 네이버 봇 차단 방지용 헤더
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36"
+    }
+
+    base_search_url = "https://search.naver.com/search.naver"
+
+    for sent in target_sentences:
+        # 3. 정확도 검사를 위해 따옴표("")로 감싸서 검색 (Exact Match)
+        query = f'"{sent}"'
+        params = {"query": query, "where": "view"}  # where=view (블로그/카페 탭)
+
+        try:
+            resp = requests.get(base_search_url, headers=headers, params=params, timeout=5)
+            soup = BeautifulSoup(resp.text, "html.parser")
+
+            # 4. 결과 분석
+            # '검색결과가 없습니다' 문구가 뜨거나, 리스트가 비어있으면 안전
+            # 네이버 뷰탭 클래스 구조에 따라 다르지만, 보통 결과 없으면 특정 문구가 뜸
+            text_body = soup.text
+
+            if "검색결과가 없습니다" in text_body:
+                status = "안전 (Unique)"
+                is_safe = True
+            else:
+                # 결과가 있으면 중복 의심
+                status = "중복 발견 (Dangerous)"
+                is_safe = False
+
+            results.append({
+                "sentence": sent,
+                "status": status,
+                "is_safe": is_safe
+            })
+
+            # 과도한 요청 방지
+            time.sleep(0.5)
+
+        except Exception as e:
+            results.append({
+                "sentence": sent,
+                "status": "검사 실패 (Error)",
+                "is_safe": False
+            })
+
+    return results, None
 
 
 def to_int(v):
@@ -389,9 +461,8 @@ LOGIN_HTML = """
 
       <h1>키워드 리포트</h1>
       <p>
-        네이버 검색 데이터를 기반으로 <br>
-        키워드 규모·경쟁도를 빠르게 확인하고,<br>
-        리포트를 엑셀로 정리할 수 있습니다.
+        네이버 검색 데이터를 기반으로 키워드 규모·경쟁도를 빠르게 확인하고,<br>
+        리포트 엑셀로 정리할 수 있습니다.
       </p>
 
       <div class="chips">
@@ -690,6 +761,61 @@ canvas{background:#f9fafb;border-radius:8px;padding:8px;}
     {% endfor %}
   </table>
   {% endif %}
+  
+  <div class="card" style="margin-top:24px; border:1px solid #e5e7eb; box-shadow:0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+    <div style="border-bottom:1px solid #f3f4f6; padding-bottom:12px; margin-bottom:16px;">
+      <h3 style="margin:0; font-size:16px; color:#111827; display:flex; align-items:center; gap:8px;">
+        📝 원고 중복(유사문서) 사전 점검
+      </h3>
+      <p style="margin:4px 0 0; font-size:12px; color:#6b7280;">
+        작성한 블로그 글을 붙여넣으면, 핵심 문장을 랜덤 추출하여 네이버 검색 결과와 비교합니다.
+      </p>
+    </div>
+    
+    <form method="post">
+      <label style="color:#374151;">블로그 원고 내용</label>
+      <textarea name="blog_content" rows="6" 
+                placeholder="여기에 작성한 블로그 글 전체를 복사해서 붙여넣으세요..."
+                style="width:100%; padding:12px; margin-top:6px; border:1px solid #d1d5db; border-radius:8px; font-size:13px; line-height:1.6; outline:none; transition: border-color 0.2s;"
+                onfocus="this.style.borderColor='#3b82f6'; this.style.boxShadow='0 0 0 3px rgba(59, 130, 246, 0.1)';"
+                onblur="this.style.borderColor='#d1d5db'; this.style.boxShadow='none';">{{ blog_content or '' }}</textarea>
+      
+      <button name="action" value="check_duplication" 
+              style="width:100%; margin-top:12px; padding:12px; background:#111827; color:white; border:none; border-radius:8px; font-weight:600; font-size:14px; cursor:pointer; transition: background 0.2s;"
+              onmouseover="this.style.backgroundColor='#1f2937'"
+              onmouseout="this.style.backgroundColor='#111827'">
+        🔍 중복 정밀 검사 시작
+      </button>
+    </form>
+
+    {% if dup_results %}
+      <div style="margin-top:20px;">
+        <h4 style="font-size:13px; font-weight:600; color:#374151; margin-bottom:8px;">검사 결과 분석</h4>
+        
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          {% for res in dup_results %}
+            <div style="padding:12px; border-radius:8px; font-size:13px; border-left:4px solid {{ '#22c55e' if res.is_safe else '#ef4444' }}; background: {{ '#f0fdf4' if res.is_safe else '#fef2f2' }};">
+              <div style="display:flex; align-items:center; gap:6px; margin-bottom:4px;">
+                {% if res.is_safe %}
+                  <span style="color:#15803d; font-weight:bold;">✅ 안전 (Unique)</span>
+                {% else %}
+                  <span style="color:#b91c1c; font-weight:bold;">⚠️ 중복 발견 (위험)</span>
+                {% endif %}
+              </div>
+              <div style="color:#4b5563; line-height:1.4;">
+                "{{ res.sentence }}"
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+
+        <p style="font-size:11px; color:#9ca3af; margin-top:12px; text-align:center;">
+          * '중복 발견'된 문장은 어미나 단어를 수정하여 독창성을 높이는 것이 좋습니다.<br>
+          * 랜덤으로 추출된 3~5개의 핵심 문장을 네이버 정밀 검색(Exact Match)으로 대조한 결과입니다.
+        </p>
+      </div>
+    {% endif %}
+  </div>
 
   {% if chart_available %}
   <div class="chart-section">
@@ -826,6 +952,8 @@ def index():
     max_comp_str = ""
     selected = ""
     sort_by = "total"
+    blog_content = ""
+    dup_results = None
 
     # 그래프용 기본값
     chart_available = False
@@ -1131,6 +1259,19 @@ def index():
                     downloadable = True
                     msg = full_msg
 
+        elif action == "check_duplication":
+            blog_content = request.form.get("blog_content", "").strip()
+            if not blog_content:
+                msg = "검사할 원고 내용을 입력해주세요."
+            else:
+                # Step 2에서 만든 함수 호출
+                results, error_msg = check_blog_duplication(blog_content)
+                if error_msg:
+                    msg = error_msg
+                else:
+                    dup_results = results
+                    msg = "중복 검사가 완료되었습니다. 아래 결과를 확인하세요."
+
         else:
             msg = "알 수 없는 동작입니다."
 
@@ -1156,6 +1297,8 @@ def index():
         blog_title_groups=blog_title_groups,
         report_title=report_title,
         industry_name=industry_name,
+        blog_content=blog_content,
+        dup_results=dup_results,
     )
 
 
