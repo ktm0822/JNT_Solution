@@ -83,7 +83,7 @@ def load_industry_template(industry_code: str):
 
     # 기본 템플릿 (업종 공통)
     default = {
-        "industry": "키워드 리포트",
+        "industry": "",
         "report_title": "J&T Solution 키워드 리포트",
         "good_keyword_rule": "검색량 100 이상 & 경쟁도 0.8 이하 = 좋은 키워드",
         "summary_format": (
@@ -553,389 +553,319 @@ def save_presets(data):
 # 메인 페이지 템플릿
 # ==========================
 MAIN_HTML = """
-<!doctype html><html lang="ko"><head><meta charset="utf-8">
-<title>J&T Solution - 키워드 리포트</title>
-<style>
-body{
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-  background:#f4f5f7;
-  max-width:960px;
-  margin:40px auto;
-  padding:0 16px;
-}
-.card{
-  background:white;
-  padding:24px;
-  border-radius:14px;
-  box-shadow:0 6px 18px rgba(0,0,0,0.05);
-}
-.logo{display:flex;align-items:center;gap:10px;margin-bottom:16px;}
-.logo img{height:40px;}
-.sub{font-size:12px;color:#888;}
-.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
-a.logout,a.admin-link{font-size:13px;text-decoration:none;margin-left:8px;}
-a.logout{color:#e11d48;}
-a.admin-link{color:#2563eb;}
-label{display:block;margin-top:12px;font-size:13px;font-weight:600;}
-textarea,input,select,button{
-  width:100%;padding:8px;margin-top:4px;
-  border-radius:8px;border:1px solid #d1d5db;
-  font-size:13px;box-sizing:border-box;
-}
-textarea{min-height:72px;}
-button{
-  margin-top:10px;background:#111827;color:white;
-  border:none;border-radius:8px;font-weight:600;cursor:pointer;
-}
-.msg{margin-top:16px;padding:10px;background:#f3f4f6;border-radius:8px;font-size:13px;}
-.chart-section{margin-top:24px;}
-.chart-section h3{font-size:14px;margin-bottom:8px;}
-canvas{background:#f9fafb;border-radius:8px;padding:8px;}
-.summary-table{margin-top:16px;font-size:13px;border-collapse:collapse;width:100%;}
-.summary-table th,.summary-table td{
-  border:1px solid #e5e7eb;padding:6px 8px;text-align:center;
-}
-.summary-table th{background:#f9fafb;}
-.recommend-list{margin-top:4px;font-size:13px;padding-left:18px;}
-.recommend-list li{margin-bottom:2px;}
-.preset-box{
-  margin-top:24px;
-  padding:16px;
-  border-radius:12px;
-  background:#f7f7f9;
-  border:1px solid #e5e7eb;
-}
-.preset-box-title{font-size:15px;font-weight:600;margin-bottom:4px;}
-.preset-note{font-size:12px;color:#6b7280;margin-bottom:8px;}
-.btn-row{display:flex;gap:8px;margin-top:8px;}
-.btn-row button{flex:1;margin-top:0;}
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>J&T Solution - 마케팅 인텔리전스</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #1e293b;
+      --accent: #3b82f6;
+      --bg: #f3f4f6;
+      --card-bg: #ffffff;
+      --text-main: #111827;
+      --text-sub: #6b7280;
+      --border: #e5e7eb;
+      --danger: #ef4444;
+      --success: #22c55e;
+    }
+    body {
+      font-family: 'Noto Sans KR', -apple-system, sans-serif;
+      background-color: var(--bg);
+      color: var(--text-main);
+      margin: 0;
+      padding: 0;
+      line-height: 1.5;
+    }
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 30px 20px;
+    }
+    /* 헤더 */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand img { height: 48px; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+    .brand-text h1 { margin: 0; font-size: 20px; font-weight: 700; color: var(--primary); }
+    .brand-text p { margin: 0; font-size: 13px; color: var(--text-sub); }
+    .user-menu { font-size: 14px; text-align: right; }
+    .user-menu a { color: var(--text-sub); text-decoration: none; margin-left: 10px; font-weight: 500; }
+    .user-menu a:hover { color: var(--accent); }
 
-.premium-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 18px 24px;
-  margin-bottom: 20px;
-  border-radius: 16px;
-  background: linear-gradient(135deg, #0f172a, #020617);
-  color: #fff;
-  box-shadow: 0 12px 30px rgba(0,0,0,0.25);
-}
+    /* 카드 */
+    .card {
+      background: var(--card-bg);
+      border-radius: 16px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+      padding: 24px;
+      margin-bottom: 24px;
+      border: 1px solid var(--border);
+    }
+    .card-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--primary);
+      margin: 0 0 16px 0;
+      padding-bottom: 12px;
+      border-bottom: 2px solid #f1f5f9;
+    }
 
-.premium-left {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
+    /* 폼 요소 */
+    label { display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px; }
+    input, select, textarea {
+      width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border);
+      font-size: 14px; background: #f9fafb; transition: all 0.2s; box-sizing: border-box; font-family: inherit;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none; border-color: var(--accent); background: #fff; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
 
-.premium-left img {
-  height: 42px;
-  border-radius: 8px;
-}
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 16px;
+    }
 
-.premium-title {
-  font-size: 16px;
-  font-weight: 700;
-}
+    /* 버튼 */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: 12px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; border: none;
+      transition: opacity 0.2s;
+    }
+    .btn:hover { opacity: 0.9; }
+    .btn-primary { background: var(--primary); color: white; width: 100%; }
+    .btn-outline { background: white; border: 1px solid var(--border); color: var(--text-main); padding: 8px 12px; font-size: 12px; }
+    .btn-danger { color: var(--danger); border-color: #fecaca; background: #fef2f2; }
 
-.premium-sub {
-  font-size: 12px;
-  opacity: 0.8;
-}
+    /* 프리셋 */
+    .preset-area { background: #f8fafc; border-radius: 12px; padding: 16px; margin-top: 20px; border: 1px solid var(--border); }
+    .preset-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .preset-header span { font-size: 13px; font-weight: 600; color: var(--text-sub); }
 
-.premium-right {
-  text-align: right;
-  font-size: 13px;
-}
+    /* 알림창 */
+    .alert { padding: 14px; border-radius: 8px; margin-top: 20px; font-size: 14px; background: #eff6ff; color: #1e40af; border: 1px solid #dbeafe; }
+    .alert a { color: #2563eb; font-weight: 600; }
 
-.premium-right a {
-  color: #93c5fd;
-  text-decoration: none;
-  margin-left: 10px;
-}
-</style>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-</head><body>
-<div class="card">
-  <div class="premium-header">
-    <div class="premium-left">
-      <img src="{{ url_for('static', filename='logo.png') }}"
-           onerror="this.style.display='none'">
-      <div>
-        <div class="premium-title">{{ report_title }}</div>
-        <div class="premium-sub">
-          Naver Keyword Report System · {{ industry_name }}
+    /* 테이블 */
+    .table-container { overflow-x: auto; margin-top: 10px; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 600px; }
+    th { background: #f8fafc; color: var(--text-sub); font-weight: 600; text-align: center; padding: 10px; border-bottom: 2px solid var(--border); }
+    td { padding: 10px; border-bottom: 1px solid var(--border); text-align: center; color: var(--text-main); }
+
+    /* ⭐ [수정] 차트 그리드 시스템 (깨짐 방지) */
+    .chart-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* 화면 좁으면 자동으로 밑으로 떨어짐 */
+      gap: 20px;
+    }
+    .chart-box {
+      background: #f8fafc;
+      border-radius: 12px;
+      padding: 16px;
+      border: 1px solid var(--border);
+      min-width: 0; /* ⭐ 핵심: Flex/Grid 자식 요소가 넘치지 않게 함 */
+    }
+    canvas {
+      width: 100% !important;
+      height: auto !important;
+      max-height: 300px; /* 높이 제한 */
+    }
+
+    /* 추천 리스트 */
+    .idea-list { list-style: none; padding: 0; margin: 0; }
+    .idea-list li { background: #f8fafc; margin-bottom: 6px; padding: 8px 12px; border-radius: 6px; font-size: 13px; color: var(--text-main); }
+    .idea-list li:before { content: "💡"; margin-right: 8px; }
+
+    /* 검사 결과 */
+    .check-result-item { padding: 12px; border-radius: 8px; margin-bottom: 8px; font-size: 13px; border-left: 4px solid transparent; }
+    .check-safe { background: #f0fdf4; border-color: var(--success); }
+    .check-danger { background: #fef2f2; border-color: var(--danger); }
+    .tag { font-weight: 700; font-size: 11px; padding: 2px 6px; border-radius: 4px; margin-right: 6px; }
+    .tag-safe { background: #dcfce7; color: #166534; }
+    .tag-danger { background: #fee2e2; color: #991b1b; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header class="header">
+    <div class="brand">
+      <img src="{{ url_for('static', filename='logo.png') }}" onerror="this.src='https://via.placeholder.com/48?text=JNT'">
+      <div class="brand-text">
+        <h1>J&T Intelligence</h1>
+        <p>{{ industry_name }} 키워드 분석 시스템</p>
+      </div>
+    </div>
+    <div class="user-menu">
+      <span>안녕하세요, <strong>{{ session['name'] }}</strong>님</span><br>
+      {% if session['user'] == 'admin' %} <a href="{{ url_for('manage_accounts') }}">⚙️ 관리자</a> {% endif %}
+      <a href="{{ url_for('logout') }}">로그아웃</a>
+    </div>
+  </header>
+
+  <form method="post">
+    <div class="card">
+      <div class="card-title">🔍 키워드 분석 설정</div>
+      <label>기준 키워드 입력</label>
+      <textarea name="keywords" rows="2" placeholder="예: 강남맛집, 홍대카페">{{keywords}}</textarea>
+
+      <div class="form-grid">
+        <div><label>최소 검색수</label><input type="number" name="min_total" value="{{min_total or ''}}" placeholder="예: 100"></div>
+        <div><label>최대 경쟁도</label><input name="max_comp" value="{{max_comp or ''}}" placeholder="예: 0.8"></div>
+        <div>
+          <label>정렬 기준</label>
+          <select name="sort_by">
+            <option value="total" {% if sort_by == 'total' %}selected{% endif %}>검색수 높은순</option>
+            <option value="comp" {% if sort_by == 'comp' %}selected{% endif %}>경쟁도 낮은순</option>
+          </select>
+        </div>
+      </div>
+      <button name="action" value="generate" class="btn btn-primary">🚀 데이터 분석 시작</button>
+
+      <div class="preset-area">
+        <div class="preset-header">
+          <span>📂 저장된 프리셋</span>
+          <div style="display:flex; gap:6px;">
+            <select name="preset" style="padding: 6px;"><option value="">-- 선택 --</option>{% for n in presets %}<option value="{{n}}" {% if n == selected %}selected{% endif %}>{{n}}</option>{% endfor %}</select>
+            <button type="submit" name="action" value="load" class="btn btn-outline">열기</button>
+            <button type="submit" name="action" value="delete_preset" class="btn btn-outline btn-danger" onclick="return confirm('삭제?');">삭제</button>
+          </div>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <input name="newname" placeholder="새 프리셋 이름" style="flex:1;">
+          <button type="submit" name="action" value="save" class="btn btn-outline" style="background:#1e293b; color:white;">저장</button>
         </div>
       </div>
     </div>
-
-    <div class="premium-right">
-      👤 {{ session['name'] }}<br>
-      {% if session['user'] == 'admin' %}
-        <a href="{{ url_for('manage_accounts') }}">관리자</a>
-      {% endif %}
-      <a href="{{ url_for('logout') }}">로그아웃</a>
-    </div>
-</div>
-
-  <!-- 하나의 폼 안에서: 위는 '리포트 조건', 아래는 '프리셋 관리(선택)' -->
-  <form method="post">
-
-    <!-- ⭐ 1. 리포트 생성에 필요한 핵심 조건 (맨 위 배치) -->
-    <label>기준 키워드 (쉼표로 구분)</label>
-    <textarea name="keywords" rows="3" placeholder="키워드1, 키워드2, 키워드3 (키워드 입력시 띄어쓰기는 불가, 예: 숨은 맛집->숨은맛집으로 인식)">{{keywords}}</textarea>
-
-    <label>최소 총 검색수</label>
-    <input type="number" name="min_total" value="{{min_total or ''}}" placeholder="예: 100">
-
-    <label>최대 경쟁도</label>
-    <input name="max_comp" value="{{max_comp or ''}}" placeholder="예: 0.8 (없으면 공백)">
-
-    <label>정렬 기준</label>
-    <select name="sort_by">
-      <option value="total" {% if sort_by == 'total' %}selected{% endif %}>총 검색수순</option>
-      <option value="comp" {% if sort_by == 'comp' %}selected{% endif %}>경쟁도 낮은순</option>
-    </select>
-
-    <button name="action" value="generate">리포트 생성</button>
-
-    <hr style="margin:24px 0;border:none;border-top:1px solid #e5e7eb;">
-
-    <!-- ⭐ 2. 프리셋 관리 영역 (선택 기능) -->
-    <div class="preset-box">
-      <div class="preset-box-title">프리셋 관리 (선택 기능)</div>
-      <div class="preset-note">
-        자주 사용하는 기준 키워드·조건을 저장해 두었다가, 다음에 불러와서 사용할 수 있습니다.
-      </div>
-
-      <label style="margin-top:4px;">저장된 프리셋</label>
-      <select name="preset">
-        <option value="">-- 선택 --</option>
-        {% for n in presets %}
-          <option value="{{n}}" {% if n == selected %}selected{% endif %}>{{n}}</option>
-        {% endfor %}
-      </select>
-
-      <div class="btn-row">
-        <button type="submit" name="action" value="load">불러오기</button>
-        <button type="submit" name="action" value="delete_preset"
-                onclick="return confirm('선택한 프리셋을 삭제할까요?');">
-          삭제
-        </button>
-      </div>
-
-      <label style="margin-top:14px;">새 프리셋 이름</label>
-      <input name="newname" placeholder="예: 지역명·업종별 키워드 세트">
-      <button type="submit" name="action" value="save">프리셋 저장</button>
-    </div>
-
   </form>
 
   {% if msg %}
-  <div class="msg">
+  <div class="alert">
     {{msg|safe}}
-    {% if downloadable %}
-    <br><a href="{{ url_for('download') }}">📥 엑셀 다운로드</a>
+    {% if downloadable %} <br><a href="{{ url_for('download') }}" style="margin-top:8px; display:inline-block;">📥 엑셀 다운로드</a> {% endif %}
+  </div>
+  {% endif %}
+
+  {% if chart_available or summary_table %}
+  <div class="card">
+    <div class="card-title">📊 분석 결과</div>
+
+    {% if summary_table %}
+    <div class="table-container" style="margin-bottom:30px;">
+      <table>
+        <thead><tr><th>기준 키워드</th><th>수집 수</th><th>평균 검색량</th><th>평균 경쟁도</th><th style="color:var(--accent);">조건 통과</th></tr></thead>
+        <tbody>
+          {% for row in summary_table %}
+          <tr><td>{{row["기준 키워드"]}}</td><td>{{row["수집 키워드 수"]}}</td><td>{{row["평균 검색량"]}}</td><td>{{row["평균 경쟁도"]}}</td><td style="color:var(--accent); font-weight:bold;">{{row["조건 통과"]}}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+
+    {% if chart_available %}
+    <div class="chart-grid">
+      <div class="chart-box">
+        <h4 style="font-size:13px; text-align:center; margin-bottom:10px;">검색량 Top 20</h4>
+        <div style="position: relative; height:250px; width:100%;">
+            <canvas id="volumeChart"></canvas>
+        </div>
+      </div>
+      <div class="chart-box">
+        <h4 style="font-size:13px; text-align:center; margin-bottom:10px;">경쟁도 분석</h4>
+        <div style="position: relative; height:250px; width:100%;">
+            <canvas id="compChart"></canvas>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="chart-grid" style="align-items:start;">
+    {% if recommended_groups %}
+    <div class="card">
+      <div class="card-title">🧠 키워드 조합 추천</div>
+      {% for group in recommended_groups %}
+        <h5 style="margin:10px 0 6px; font-size:13px; color:var(--text-sub);">[{{ group.base }}]</h5>
+        <ul class="idea-list">{% for phrase in group.phrases %}<li>{{ phrase }}</li>{% endfor %}</ul>
+      {% endfor %}
+    </div>
+    {% endif %}
+    {% if blog_title_groups %}
+    <div class="card">
+      <div class="card-title">✏️ 블로그 제목 제안</div>
+      {% for g in blog_title_groups %}
+        <h5 style="margin:10px 0 6px; font-size:13px; color:var(--text-sub);">[{{ g.base }}]</h5>
+        <ul class="idea-list">{% for t in g.titles %}<li style="background:#f0fdf4;">{{ t }}</li>{% endfor %}</ul>
+      {% endfor %}
+    </div>
     {% endif %}
   </div>
   {% endif %}
 
-  {% if summary_table %}
-  <h3 style="margin-top:18px;font-size:14px;">📋 기준 키워드별 요약</h3>
-  <table class="summary-table">
-    <tr>
-      <th>기준 키워드</th>
-      <th>수집 키워드 수</th>
-      <th>평균 검색량</th>
-      <th>평균 경쟁도</th>
-      <th>조건 통과</th>
-    </tr>
-    {% for row in summary_table %}
-    <tr>
-      <td>{{row["기준 키워드"]}}</td>
-      <td>{{row["수집 키워드 수"]}}</td>
-      <td>{{row["평균 검색량"]}}</td>
-      <td>{{row["평균 경쟁도"]}}</td>
-      <td>{{row["조건 통과"]}}</td>
-    </tr>
-    {% endfor %}
-  </table>
-  {% endif %}
-  
-  <div class="card" style="margin-top:24px; border:1px solid #e5e7eb; box-shadow:0 4px 6px -1px rgba(0, 0, 0, 0.1);">
-    <div style="border-bottom:1px solid #f3f4f6; padding-bottom:12px; margin-bottom:16px;">
-      <h3 style="margin:0; font-size:16px; color:#111827; display:flex; align-items:center; gap:8px;">
-        📝 원고 중복(유사문서) 사전 점검
-      </h3>
-      <p style="margin:4px 0 0; font-size:12px; color:#6b7280;">
-        작성한 블로그 글을 붙여넣으면, 핵심 문장을 랜덤 추출하여 네이버 검색 결과와 비교합니다.
-      </p>
-    </div>
-    
+  <div class="card" style="border-top: 4px solid var(--primary);">
+    <div class="card-title" style="border-bottom:none;">📝 원고 중복(유사문서) 사전 점검</div>
     <form method="post">
-      <label style="color:#374151;">블로그 원고 내용</label>
-      <textarea name="blog_content" rows="6" 
-                placeholder="여기에 작성한 블로그 글 전체를 복사해서 붙여넣으세요..."
-                style="width:100%; padding:12px; margin-top:6px; border:1px solid #d1d5db; border-radius:8px; font-size:13px; line-height:1.6; outline:none; transition: border-color 0.2s;"
-                onfocus="this.style.borderColor='#3b82f6'; this.style.boxShadow='0 0 0 3px rgba(59, 130, 246, 0.1)';"
-                onblur="this.style.borderColor='#d1d5db'; this.style.boxShadow='none';">{{ blog_content or '' }}</textarea>
-      
-      <button name="action" value="check_duplication" 
-              style="width:100%; margin-top:12px; padding:12px; background:#111827; color:white; border:none; border-radius:8px; font-weight:600; font-size:14px; cursor:pointer; transition: background 0.2s;"
-              onmouseover="this.style.backgroundColor='#1f2937'"
-              onmouseout="this.style.backgroundColor='#111827'">
-        🔍 중복 정밀 검사 시작
-      </button>
+      <textarea name="blog_content" rows="6" placeholder="작성한 블로그 글 붙여넣기..." 
+                onfocus="this.style.borderColor='#3b82f6'" onblur="this.style.borderColor='#e5e7eb'">{{ blog_content or '' }}</textarea>
+      <button name="action" value="check_duplication" class="btn btn-primary" style="margin-top:12px;">🔍 중복 정밀 검사</button>
     </form>
-
     {% if dup_results %}
       <div style="margin-top:20px;">
-        <h4 style="font-size:13px; font-weight:600; color:#374151; margin-bottom:8px;">검사 결과 분석</h4>
-        
-        <div style="display:flex; flex-direction:column; gap:8px;">
-          {% for res in dup_results %}
-            <div style="padding:12px; border-radius:8px; font-size:13px; border-left:4px solid {{ '#22c55e' if res.is_safe else '#ef4444' }}; background: {{ '#f0fdf4' if res.is_safe else '#fef2f2' }};">
-              <div style="display:flex; align-items:center; gap:6px; margin-bottom:4px;">
-                {% if res.is_safe %}
-                  <span style="color:#15803d; font-weight:bold;">✅ 안전 (Unique)</span>
-                {% else %}
-                  <span style="color:#b91c1c; font-weight:bold;">⚠️ 중복 발견 (위험)</span>
-                {% endif %}
-              </div>
-              <div style="color:#4b5563; line-height:1.4;">
-                "{{ res.sentence }}"
-              </div>
-            </div>
-          {% endfor %}
+        <h4 style="font-size:13px; font-weight:600; margin-bottom:12px;">검사 결과</h4>
+        {% for res in dup_results %}
+        <div class="check-result-item {{ 'check-safe' if res.is_safe else 'check-danger' }}">
+          <span class="tag {{ 'tag-safe' if res.is_safe else 'tag-danger' }}">{{ 'SAFE' if res.is_safe else 'WARNING' }}</span>
+          "{{ res.sentence }}"
         </div>
-
-        <p style="font-size:11px; color:#9ca3af; margin-top:12px; text-align:center;">
-          * '중복 발견'된 문장은 어미나 단어를 수정하여 독창성을 높이는 것이 좋습니다.<br>
-          * 랜덤으로 추출된 3~5개의 핵심 문장을 네이버 정밀 검색(Exact Match)으로 대조한 결과입니다.
-        </p>
+        {% endfor %}
       </div>
     {% endif %}
   </div>
 
-  {% if chart_available %}
-  <div class="chart-section">
-    <h3>📊 총 검색수 기준 상위 {{ chart_count }}개 키워드 (PC / 모바일)</h3>
-    <canvas id="volumeChart" height="130"></canvas>
-  </div>
-
-  <div class="chart-section">
-    <h3>📈 상위 키워드 경쟁도 분석</h3>
-    <canvas id="compChart" height="130"></canvas>
-  </div>
-  {% endif %}
-
-  {% if recommended_groups %}
-  <div class="chart-section">
-    <h3>🧠 추천 키워드 조합 (블로그/콘텐츠 활용)</h3>
-
-    {% for group in recommended_groups %}
-      <h4 style="font-size:13px;margin-top:8px;">[{{ group.base }}]</h4>
-      <ul class="recommend-list">
-        {% for phrase in group.phrases %}
-          <li>{{ phrase }}</li>
-        {% endfor %}
-      </ul>
-    {% endfor %}
-  </div>
-  {% endif %}
-
-  {% if blog_title_groups %}
-  <div class="chart-section">
-    <h3>✏️ 블로그 제목 아이디어</h3>
-    {% for g in blog_title_groups %}
-      <h4 style="font-size:13px;margin-top:8px;">[{{ g.base }}]</h4>
-      <ul class="recommend-list">
-        {% for t in g.titles %}
-          <li>{{ t }}</li>
-        {% endfor %}
-      </ul>
-    {% endfor %}
-  </div>
-  {% endif %}
+  <div style="text-align:center; font-size:12px; color:#9ca3af; margin-top:40px;">© 2026 J&T Solution Intelligence.</div>
 </div>
 
 {% if chart_available %}
 <script>
+  // Chart.js 반응형 설정 (유지보수 용이)
+  const commonOptions = {
+    responsive: true,
+    maintainAspectRatio: false, // 부모 div 크기에 맞춤
+    plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: {size: 11} } } },
+    scales: { x: { ticks: { display: false } } }
+  };
   const kwLabels = {{ chart_labels|tojson }};
-  const pcData   = {{ chart_pc|tojson }};
-  const moData   = {{ chart_mo|tojson }};
+  const pcData = {{ chart_pc|tojson }};
+  const moData = {{ chart_mo|tojson }};
   const compData = {{ chart_comp|tojson }};
 
-  // 검색량 차트
-  const ctx1 = document.getElementById('volumeChart').getContext('2d');
-  new Chart(ctx1, {
+  new Chart(document.getElementById('volumeChart'), {
     type: 'bar',
-    data: {
-      labels: kwLabels,
-      datasets: [
-        { label: 'PC 검색수', data: pcData },
-        { label: '모바일 검색수', data: moData }
-      ]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: { position: 'top' },
-        tooltip: { mode: 'index', intersect: false }
-      },
-      scales: {
-        x: { ticks: { maxRotation: 60, minRotation: 40 }},
-        y: { beginAtZero: true }
-      }
-    }
+    data: { labels: kwLabels, datasets: [{ label: 'PC', data: pcData, backgroundColor: '#94a3b8' }, { label: 'Mobile', data: moData, backgroundColor: '#3b82f6' }] },
+    options: commonOptions
   });
 
-  // 경쟁도 차트 - 색상으로 경쟁도 레벨 표시
-  const compColors = compData.map((v, i) => {
-    const total = pcData[i] + moData[i];
-    if (total >= 100 && v <= 0.8) {
-      return 'rgba(34, 197, 94, 0.9)';   // 초록 = 상대적으로 좋은 키워드
-    } else if (v <= 0.9) {
-      return 'rgba(245, 158, 11, 0.9)';  // 주황 = 중간
-    } else {
-      return 'rgba(239, 68, 68, 0.9)';   // 빨강 = 경쟁 높음
-    }
-  });
-
-  const ctx2 = document.getElementById('compChart').getContext('2d');
-  new Chart(ctx2, {
+  const compColors = compData.map(v => (v<=0.3 ? '#22c55e' : v<=0.8 ? '#f59e0b' : '#ef4444'));
+  new Chart(document.getElementById('compChart'), {
     type: 'bar',
-    data: {
-      labels: kwLabels,
-      datasets: [
-        {
-          label: '경쟁도',
-          data: compData,
-          backgroundColor: compColors
-        }
-      ]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: { display: true },
-        tooltip: {
-          callbacks: {
-            label: function(context) {
-              return '경쟁도: ' + context.parsed.y.toFixed(2);
-            }
-          }
-        }
-      },
-      scales: {
-        x: { ticks: { maxRotation: 60, minRotation: 40 }},
-        y: { beginAtZero: true, max: 1.0 }
-      }
-    }
+    data: { labels: kwLabels, datasets: [{ label: '경쟁도', data: compData, backgroundColor: compColors, borderRadius: 4 }] },
+    options: { ...commonOptions, scales: { y: { beginAtZero: true, max: 1.0 } } }
   });
 </script>
 {% endif %}
-</body></html>
+</body>
+</html>
 """
 
 
