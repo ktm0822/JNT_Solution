@@ -268,241 +268,198 @@ LOGIN_HTML = """
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>로그인 - J&T Solution</title>
+  <title>J&T Intelligence - Login</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
   <style>
-    :root{
-      --bg1:#0b1220;
-      --bg2:#111827;
-      --card:#0f172a;
-      --muted:#94a3b8;
-      --line:#1f2937;
-      --text:#e5e7eb;
-      --white:#ffffff;
-      --accent:#22c55e;
-      --accent2:#38bdf8;
-      --danger:#fb7185;
+    :root {
+      --bg1: #0f172a;      /* 딥 네이비 블랙 */
+      --bg2: #1e293b;      /* 다크 슬레이트 */
+      --accent: #3b82f6;   /* 인텔리전스 블루 */
+      --accent-glow: rgba(59, 130, 246, 0.5);
+      --text: #f1f5f9;     /* 화이트 실버 */
+      --muted: #94a3b8;    /* 흐린 회색 */
     }
-    *{box-sizing:border-box;}
-    body{
-      margin:0;
-      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-      color:var(--text);
-      min-height:100vh;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding:24px;
-      background:
-        radial-gradient(1200px 600px at 20% 10%, rgba(56,189,248,0.20), transparent 55%),
-        radial-gradient(900px 500px at 80% 30%, rgba(34,197,94,0.16), transparent 55%),
-        linear-gradient(180deg, var(--bg1), var(--bg2));
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Noto Sans KR', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      /* 고급스러운 다크 그라데이션 배경 */
+      background: radial-gradient(circle at 50% 0%, #1e293b 0%, #020617 100%);
+      color: var(--text);
+      overflow: hidden;
     }
-    .shell{
-      width:100%;
-      max-width:980px;
-      display:grid;
-      grid-template-columns: 1.1fr 0.9fr;
-      gap:18px;
-      align-items:stretch;
+
+    /* 배경 은은한 빛 효과 (오로라 느낌) */
+    body::before {
+      content: "";
+      position: absolute;
+      top: -10%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+      opacity: 0.2;
+      pointer-events: none;
+      z-index: 0;
     }
-    .hero{
-      border:1px solid rgba(148,163,184,0.12);
-      background:linear-gradient(180deg, rgba(15,23,42,0.70), rgba(2,6,23,0.65));
-      border-radius:18px;
-      padding:28px;
-      overflow:hidden;
-      position:relative;
-      box-shadow:0 20px 60px rgba(0,0,0,0.35);
+
+    .login-box {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 420px;
+      padding: 40px;
+
+      /* 글래스모피즘 (유리 효과) */
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 24px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      text-align: center;
     }
-    .hero:before{
-      content:"";
-      position:absolute;
-      inset:-2px;
-      background: radial-gradient(600px 250px at 30% 0%, rgba(56,189,248,0.16), transparent 60%),
-                  radial-gradient(520px 220px at 70% 20%, rgba(34,197,94,0.12), transparent 55%);
-      pointer-events:none;
+
+    .brand-logo {
+      width: 64px;
+      height: 64px;
+      margin-bottom: 20px;
+      border-radius: 16px;
+      box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+      border: 1px solid rgba(255,255,255,0.1);
     }
-    .brand{
-      display:flex;
-      align-items:center;
-      gap:12px;
-      position:relative;
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 26px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: -0.5px;
     }
-    .brand img{
-      width:40px;height:40px;
-      border-radius:10px;
-      background:rgba(255,255,255,0.08);
-      border:1px solid rgba(148,163,184,0.14);
-      padding:6px;
+
+    p.subtitle {
+      margin: 0 0 32px;
+      color: var(--muted);
+      font-size: 13px;
+      letter-spacing: 0.5px;
     }
-    .brand .t1{font-weight:800; font-size:18px; letter-spacing:-0.02em;}
-    .brand .t2{font-size:12px; color:var(--muted); margin-top:2px;}
-    .hero h1{
-      position:relative;
-      margin:22px 0 8px;
-      font-size:26px;
-      line-height:1.25;
-      letter-spacing:-0.03em;
+
+    .input-group {
+      margin-bottom: 16px;
+      text-align: left;
     }
-    .hero p{
-      position:relative;
-      margin:0;
-      color:var(--muted);
-      font-size:13px;
-      line-height:1.55;
-      max-width:46ch;
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #cbd5e1;
+      margin-left: 4px;
     }
-    .chips{
-      position:relative;
-      margin-top:18px;
-      display:flex;
-      flex-wrap:wrap;
-      gap:8px;
+
+    input {
+      width: 100%;
+      padding: 14px 16px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      color: white;
+      font-size: 14px;
+      transition: all 0.3s ease;
+      outline: none;
     }
-    .chip{
-      font-size:11px;
-      color:#cbd5e1;
-      border:1px solid rgba(148,163,184,0.16);
-      background:rgba(2,6,23,0.35);
-      padding:6px 10px;
-      border-radius:999px;
+
+    input::placeholder { color: rgba(255, 255, 255, 0.3); }
+
+    input:focus {
+      border-color: var(--accent);
+      background: rgba(0, 0, 0, 0.5);
+      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
     }
-    .card{
-      border:1px solid rgba(148,163,184,0.12);
-      background:rgba(2,6,23,0.55);
-      border-radius:18px;
-      padding:22px;
-      box-shadow:0 20px 60px rgba(0,0,0,0.35);
+
+    button {
+      width: 100%;
+      padding: 16px;
+      margin-top: 12px;
+      border: none;
+      border-radius: 12px;
+
+      /* 버튼 그라데이션 (고급진 블루) */
+      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+      color: white;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 10px 20px -5px rgba(37, 99, 235, 0.4);
     }
-    .card h2{
-      margin:0 0 6px;
-      font-size:16px;
-      letter-spacing:-0.02em;
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 15px 25px -5px rgba(37, 99, 235, 0.5);
+      filter: brightness(1.1);
     }
-    .card .sub{
-      margin:0 0 14px;
-      font-size:12px;
-      color:var(--muted);
-      line-height:1.5;
+    button:active { transform: translateY(0); }
+
+    .footer-text {
+      margin-top: 30px;
+      font-size: 11px;
+      color: rgba(148, 163, 184, 0.6);
+      line-height: 1.6;
     }
-    .field{
-      margin-top:10px;
-    }
-    .label{
-      display:block;
-      font-size:11px;
-      color:#cbd5e1;
-      margin-bottom:6px;
-    }
-    input{
-      width:100%;
-      padding:11px 12px;
-      border-radius:12px;
-      border:1px solid rgba(148,163,184,0.18);
-      background:rgba(15,23,42,0.65);
-      color:var(--text);
-      font-size:13px;
-      outline:none;
-    }
-    input:focus{
-      border-color: rgba(56,189,248,0.55);
-      box-shadow: 0 0 0 3px rgba(56,189,248,0.14);
-    }
-    .btn{
-      width:100%;
-      margin-top:14px;
-      padding:11px 12px;
-      border:none;
-      border-radius:12px;
-      font-size:13px;
-      font-weight:700;
-      cursor:pointer;
-      color:#052e1d;
-      background: linear-gradient(90deg, var(--accent), #86efac);
-    }
-    .btn:hover{filter:brightness(0.98);}
-    .hint{
-      margin-top:10px;
-      font-size:11px;
-      color:var(--muted);
-      line-height:1.45;
-    }
-    .msg{
-      margin-top:12px;
-      padding:10px 12px;
-      border-radius:12px;
-      background: rgba(251,113,133,0.10);
-      border:1px solid rgba(251,113,133,0.25);
-      color:#fecdd3;
-      font-size:12px;
-    }
-    .footer{
-      margin-top:14px;
-      font-size:11px;
-      color:rgba(148,163,184,0.85);
-      text-align:center;
-    }
-    @media (max-width: 860px){
-      .shell{grid-template-columns:1fr; max-width:520px;}
-      .hero{display:none;}
+
+    .msg {
+      margin-top: 20px;
+      padding: 12px;
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.2);
+      color: #fca5a5;
+      font-size: 13px;
+      border-radius: 8px;
     }
   </style>
 </head>
 <body>
-  <div class="shell">
-    <div class="hero">
-      <div class="brand">
-        <img src="{{ url_for('static', filename='logo.png') }}" onerror="this.style.display='none'">
-        <div>
-          <div class="t1">J&T Solution</div>
-          <div class="t2">Naver Keyword Report System</div>
-        </div>
+
+  <div class="login-box">
+    <img src="{{ url_for('static', filename='logo.png') }}" class="brand-logo" onerror="this.style.display='none'">
+
+    <h1>J&T Intelligence</h1>
+    <p class="subtitle">Premium Keyword Analysis System</p>
+
+    <form method="post">
+      <div class="input-group">
+        <label>ACCESS ID</label>
+        <input name="username" type="text" placeholder="아이디를 입력하세요" autocomplete="username" required>
       </div>
 
-      <h1>키워드 리포트</h1>
-      <p>
-        네이버 검색 데이터를 기반으로 키워드 규모·경쟁도를 빠르게 확인하고,<br>
-        리포트 엑셀로 정리할 수 있습니다.
-      </p>
-
-      <div class="chips">
-        <div class="chip">키워드 분석</div>
-        <div class="chip">경쟁도 시각화</div>
-        <div class="chip">엑셀 리포트</div>
-        <div class="chip">프리셋 저장</div>
-      </div>
-    </div>
-
-    <div class="card">
-      <h2>계정 로그인</h2>
-      <p class="sub">발급받은 아이디/비밀번호로 접속하세요.</p>
-
-      <form method="post" autocomplete="on">
-        <div class="field">
-          <span class="label">아이디</span>
-          <input name="username" placeholder="아이디" autocomplete="username" autofocus>
-        </div>
-
-        <div class="field">
-          <span class="label">비밀번호</span>
-          <input name="password" type="password" placeholder="비밀번호" autocomplete="current-password">
-        </div>
-
-        <button class="btn" type="submit">로그인</button>
-      </form>
-
-      <div class="hint">
-        문의: 제이앤티솔루션 · 김태민 이사 · 010-7140-1306<br>
-        * 계정 분실 시 담당자에게 연락 주세요.
+      <div class="input-group">
+        <label>PASSWORD</label>
+        <input name="password" type="password" placeholder="비밀번호를 입력하세요" autocomplete="current-password" required>
       </div>
 
-      {% if msg %}
-      <div class="msg">{{msg}}</div>
-      {% endif %}
+      <button type="submit">시스템 접속</button>
+    </form>
 
-      <div class="footer">© {{ datetime.utcnow().year }} J&T Solution</div>
+    {% if msg %}
+      <div class="msg">⚠️ {{msg}}</div>
+    {% endif %}
+
+    <div class="footer-text">
+      AUTHORIZED PERSONNEL ONLY<br>
+      © 2026 J&T Solution Corp. All rights reserved.
     </div>
   </div>
+
 </body>
 </html>
 """
@@ -550,7 +507,7 @@ def save_presets(data):
 
 
 # ==========================
-# 메인 페이지 템플릿
+# 메인 페이지 템플릿 (헤더 다크모드 적용판)
 # ==========================
 MAIN_HTML = """
 <!doctype html>
@@ -558,7 +515,7 @@ MAIN_HTML = """
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>J&T Solution - 마케팅 인텔리전스</title>
+  <title>J&T Intelligence - Dashboard</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
   <style>
@@ -581,25 +538,48 @@ MAIN_HTML = """
       padding: 0;
       line-height: 1.5;
     }
-    .container {
+
+    /* ⭐ [수정] 헤더 영역을 다크 스타일로 변경 */
+    .header-wrapper {
+      background: radial-gradient(circle at 50% 0%, #1e293b 0%, #0f172a 100%); /* 로그인 화면과 같은 톤 */
+      color: white;
+      padding: 20px 0;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+      margin-bottom: 30px;
+    }
+    .header-container {
       max-width: 1100px;
       margin: 0 auto;
-      padding: 30px 20px;
-    }
-    /* 헤더 */
-    .header {
+      padding: 0 20px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 30px;
     }
+
     .brand { display: flex; align-items: center; gap: 12px; }
-    .brand img { height: 48px; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
-    .brand-text h1 { margin: 0; font-size: 20px; font-weight: 700; color: var(--primary); }
-    .brand-text p { margin: 0; font-size: 13px; color: var(--text-sub); }
-    .user-menu { font-size: 14px; text-align: right; }
-    .user-menu a { color: var(--text-sub); text-decoration: none; margin-left: 10px; font-weight: 500; }
-    .user-menu a:hover { color: var(--accent); }
+    .brand img { 
+      height: 44px; 
+      border-radius: 8px; 
+      border: 1px solid rgba(255,255,255,0.1); /* 테두리 추가 */
+      background: rgba(255,255,255,0.1);
+    }
+    .brand-text h1 { margin: 0; font-size: 20px; font-weight: 700; color: white; letter-spacing: -0.5px; }
+    .brand-text p { margin: 0; font-size: 12px; color: rgba(255,255,255,0.6); }
+
+    .user-menu { font-size: 13px; text-align: right; color: rgba(255,255,255,0.9); }
+    .user-menu a { 
+      color: rgba(255,255,255,0.6); 
+      text-decoration: none; margin-left: 12px; font-weight: 500; 
+      transition: color 0.2s;
+    }
+    .user-menu a:hover { color: #60a5fa; } /* 호버 시 밝은 블루 */
+
+    /* 메인 컨텐츠 영역 */
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 20px 40px; /* 상단 패딩 제거 (헤더가 밖으로 나갔으므로) */
+    }
 
     /* 카드 */
     .card {
@@ -662,10 +642,10 @@ MAIN_HTML = """
     th { background: #f8fafc; color: var(--text-sub); font-weight: 600; text-align: center; padding: 10px; border-bottom: 2px solid var(--border); }
     td { padding: 10px; border-bottom: 1px solid var(--border); text-align: center; color: var(--text-main); }
 
-    /* ⭐ [수정] 차트 그리드 시스템 (깨짐 방지) */
+    /* 차트 그리드 */
     .chart-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* 화면 좁으면 자동으로 밑으로 떨어짐 */
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
       gap: 20px;
     }
     .chart-box {
@@ -673,13 +653,9 @@ MAIN_HTML = """
       border-radius: 12px;
       padding: 16px;
       border: 1px solid var(--border);
-      min-width: 0; /* ⭐ 핵심: Flex/Grid 자식 요소가 넘치지 않게 함 */
+      min-width: 0;
     }
-    canvas {
-      width: 100% !important;
-      height: auto !important;
-      max-height: 300px; /* 높이 제한 */
-    }
+    canvas { width: 100% !important; height: auto !important; max-height: 300px; }
 
     /* 추천 리스트 */
     .idea-list { list-style: none; padding: 0; margin: 0; }
@@ -697,22 +673,24 @@ MAIN_HTML = """
 </head>
 <body>
 
-<div class="container">
-  <header class="header">
-    <div class="brand">
-      <img src="{{ url_for('static', filename='logo.png') }}" onerror="this.src='https://via.placeholder.com/48?text=JNT'">
-      <div class="brand-text">
-        <h1>J&T Intelligence</h1>
-        <p>{{ industry_name }} 키워드 분석 시스템</p>
+  <div class="header-wrapper">
+    <div class="header-container">
+      <div class="brand">
+        <img src="{{ url_for('static', filename='logo.png') }}" onerror="this.src='https://via.placeholder.com/48?text=JNT'">
+        <div class="brand-text">
+          <h1>J&T Intelligence</h1>
+          <p>{{ industry_name }} 키워드 분석 시스템</p>
+        </div>
+      </div>
+      <div class="user-menu">
+        <span>안녕하세요, <strong>{{ session['name'] }}</strong>님</span><br>
+        {% if session['user'] == 'admin' %} <a href="{{ url_for('manage_accounts') }}">⚙️ 관리자</a> {% endif %}
+        <a href="{{ url_for('logout') }}">로그아웃</a>
       </div>
     </div>
-    <div class="user-menu">
-      <span>안녕하세요, <strong>{{ session['name'] }}</strong>님</span><br>
-      {% if session['user'] == 'admin' %} <a href="{{ url_for('manage_accounts') }}">⚙️ 관리자</a> {% endif %}
-      <a href="{{ url_for('logout') }}">로그아웃</a>
-    </div>
-  </header>
+  </div>
 
+<div class="container">
   <form method="post">
     <div class="card">
       <div class="card-title">🔍 키워드 분석 설정</div>
@@ -737,7 +715,7 @@ MAIN_HTML = """
           <span>📂 저장된 프리셋</span>
           <div style="display:flex; gap:6px;">
             <select name="preset" style="padding: 6px;"><option value="">-- 선택 --</option>{% for n in presets %}<option value="{{n}}" {% if n == selected %}selected{% endif %}>{{n}}</option>{% endfor %}</select>
-            <button type="submit" name="action" value="load" class="btn btn-outline">열기</button>
+            <button type="submit" name="action" value="load" class="btn btn-outline">적용</button>
             <button type="submit" name="action" value="delete_preset" class="btn btn-outline btn-danger" onclick="return confirm('삭제?');">삭제</button>
           </div>
         </div>
@@ -838,10 +816,9 @@ MAIN_HTML = """
 
 {% if chart_available %}
 <script>
-  // Chart.js 반응형 설정 (유지보수 용이)
   const commonOptions = {
     responsive: true,
-    maintainAspectRatio: false, // 부모 div 크기에 맞춤
+    maintainAspectRatio: false,
     plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: {size: 11} } } },
     scales: { x: { ticks: { display: false } } }
   };
