@@ -683,7 +683,7 @@ MAIN_HTML = """
         </div>
       </div>
       <div class="user-menu">
-        <span>안녕하세요, <strong>{{ session['name'] }}</strong>님</span><br>
+        <span>안녕하세요. <strong>{{ session['name'] }}</strong>님</span><br>
         {% if session['user'] == 'admin' %} <a href="{{ url_for('manage_accounts') }}">⚙️ 관리자</a> {% endif %}
         <a href="{{ url_for('logout') }}">로그아웃</a>
       </div>
