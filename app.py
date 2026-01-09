@@ -22,6 +22,37 @@ from flask import (
     url_for,
 )
 
+
+# ==========================
+# 한국어 조사 처리 유틸 (추가됨)
+# ==========================
+def josa(word, type_):
+    """
+    word: 키워드 (예: 강남맛집, 사과)
+    type_: '을를', '이가', '은는', '와과'
+    """
+    if not word: return word
+
+    # 마지막 글자의 유니코드 (한글인지 확인)
+    last_char = word[-1]
+    if not (0xAC00 <= ord(last_char) <= 0xD7A3):
+        # 한글이 아니면(영어/숫자 등) 그냥 앞쪽 조사(을, 이, 은) 리턴 (간이 처리)
+        return word + type_[0]
+
+    # 받침 유무 확인 ((유니코드 - 시작코드) % 28)
+    has_batchim = (ord(last_char) - 0xAC00) % 28 > 0
+
+    if type_ == '을를':
+        return word + ('을' if has_batchim else '를')
+    elif type_ == '이가':
+        return word + ('이' if has_batchim else '가')
+    elif type_ == '은는':
+        return word + ('은' if has_batchim else '는')
+    elif type_ == '와과':
+        return word + ('과' if has_batchim else '와')
+
+    return word
+
 # ==========================
 # 네이버 검색광고 API 설정
 # ==========================
@@ -683,7 +714,7 @@ MAIN_HTML = """
         </div>
       </div>
       <div class="user-menu">
-        <span>안녕하세요. <strong>{{ session['name'] }}</strong>님</span><br>
+        <span>안녕하세요, <strong>{{ session['name'] }}</strong>님</span><br>
         {% if session['user'] == 'admin' %} <a href="{{ url_for('manage_accounts') }}">⚙️ 관리자</a> {% endif %}
         <a href="{{ url_for('logout') }}">로그아웃</a>
       </div>
@@ -695,7 +726,7 @@ MAIN_HTML = """
     <div class="card">
       <div class="card-title">🔍 키워드 분석 설정</div>
       <label>기준 키워드 입력</label>
-      <textarea name="keywords" rows="2" placeholder="예: 강남맛집, 홍대카페">{{keywords}}</textarea>
+      <textarea name="keywords" rows="2" placeholder="예: 지역명 + 업종, 강남맛집, 홍대카페, 쉼표로 구분">{{keywords}}</textarea>
 
       <div class="form-grid">
         <div><label>최소 검색수</label><input type="number" name="min_total" value="{{min_total or ''}}" placeholder="예: 100"></div>
@@ -890,14 +921,23 @@ def index():
         "총 {total_keywords}개 키워드 중 {passed_keywords}개가 조건을 통과했습니다. "
         "평균 검색량 {avg_search}회, 평균 경쟁도 {avg_comp}입니다.",
     )
-    title_patterns = tpl.get(
-        "recommended_title_patterns",
-        [
-            "{지역} {키워드} 완벽 정리 가이드",
-            "{지역}에서 {키워드} 준비하려면?",
-            "{키워드} 할 때 꼭 알아야 할 3가지",
-        ],
-    )
+    title_patterns = [
+        # 정보성/가이드
+        "[{지역}] {키워드_을를} 찾고 계신가요? 솔직 가이드",
+        "현직자가 알려주는 {키워드} 실패하지 않는 법",
+        "{키워드} 비용/가격 꼼꼼하게 비교해 봤습니다",
+        "{지역} {키워드} 방문 전 꼭 알아야 할 3가지",
+
+        # 후기성/추천
+        "내돈내산 {지역} {키워드} 솔직 후기 (비추천 유형 포함)",
+        "나만 알고 싶은 {지역} {키워드} BEST 5 정리",
+        "직접 다녀온 {지역} {키워드}, 재방문 의사 200%",
+
+        # 어그로/궁금증
+        "{키워드_은는} 무조건 여기서 하세요 (광고 아님)",
+        "아직도 {키워드_을를} 고민하시나요? 딱 정해드립니다",
+        "{지역} 거주민이 추천하는 찐 {키워드} 리스트"
+    ]
 
     if request.method == "POST":
         action = request.form.get("action")
@@ -1113,23 +1153,35 @@ def index():
                         phrases = group["phrases"]
                         if not phrases:
                             continue
-                        main_kw = phrases[0]
+                        main_kw = phrases[0]  # 가장 조회수 높은 키워드 사용
 
                         titles = []
-                        for pat in title_patterns[:5]:
-                            t = pat.replace("{지역}", region_placeholder).replace(
-                                "{키워드}", main_kw
-                            )
-                            # 지역이 없을 때 생길 수 있는 이중 공백 정리
+                        # 랜덤으로 5개만 뽑아서 제안 (매번 다르게)
+                        import random
+                        selected_patterns = random.sample(title_patterns, min(5, len(title_patterns)))
+
+                        for pat in selected_patterns:
+                            # 1. 키워드+조사 처리
+                            # 예: {키워드_을를} -> 사과를 / 수박을
+                            processed_kw_ul = josa(main_kw, '을를')
+                            processed_kw_un = josa(main_kw, '은는')
+                            processed_kw_iga = josa(main_kw, '이가')
+
+                            # 2. 치환 (지역, 키워드, 조사포함키워드)
+                            t = pat.replace("{지역}", region_placeholder)
+                            t = t.replace("{키워드}", main_kw)
+                            t = t.replace("{키워드_을를}", processed_kw_ul)
+                            t = t.replace("{키워드_은는}", processed_kw_un)
+                            t = t.replace("{키워드_이가}", processed_kw_iga)
+
+                            # 3. 공백 정리
                             t = " ".join(t.split())
                             titles.append(t)
 
-                        blog_title_groups.append(
-                            {
-                                "base": base,
-                                "titles": titles,
-                            }
-                        )
+                        blog_title_groups.append({
+                            "base": base,
+                            "titles": titles,
+                        })
 
                     # 엑셀 저장 (전체, 필터, 회사정보)
                     info_rows = [
